@@ -2,4 +2,4 @@ penteVersion: regularPente
 console: UTF8
 autosave: true
 pro: false
-graphical: true
+graphical: false

@@ -6,14 +6,14 @@
 #include<string>
 #include<filesystem>
 #include"declarations.h"
-#include"penteBoard.cpp"
-#include"settings.cpp"
+#include"penteBoard.h"
+#include"settings.h"
 #include"graphicalMode.h"
 
 namespace fs = std::experimental::filesystem;
 using namespace std;
 
-coordinates gameChoices() {
+coordinates gameChoices(settings *currentSettings) {
 	bool success = false;
 	char answer[4] = "";
 	int coord1;
@@ -25,6 +25,7 @@ coordinates gameChoices() {
 		cout << "1 - zapisz gre" << endl;
 		cout << "2 - wyjdz do menu" << endl;
 		cout << "3 - wyjdz do windows" << endl;
+		if (currentSettings->allowUndo) cout << "4 - cofnij poprzedni ruch" << endl;
 		scanf_s("%s", answer, _countof(answer));
 		if (isdigit(answer[0])) {
 			switch (answer[0]) {
@@ -36,6 +37,9 @@ coordinates gameChoices() {
 				return returnValue;
 			case '3':
 				returnValue.x = -3;
+				return returnValue;
+			case '4':
+				returnValue.x = -4;
 				return returnValue;
 			}
 		}
@@ -61,7 +65,7 @@ coordinates gameChoices() {
 }
 
 void printPenteRules() {
-	std::system("cls");
+	system("cls");
 	cout << "Kazdy z dwoch graczy ma do dyspozycji kamienie: jeden koloru bialego, drugi -- czarnego, ktore ukladaja na przemian na wolnych polach planszy." << endl;
 	cout << "Celem gry jest ulozenie pieciu lub wiecej kamieni swojego koloru w ciaglej linii -- poziomej, pionowej lub ukosnej -- badz zbicie 10 kamieni przeciwnika. Pierwszy gracz, ktory tego dokona, zostaje zwyciezca; jesli nie uda sie to nikomu (plansza zostanie zapelniona), nastepuje remis." << endl;
 	cout << "Bicie kamieni przeciwnika nastepuje przez otoczenie pary jego sasiadujących kamieni z obu stron. Zbite kamienie sa usuwane z planszy, a pola, ktore okupowaly, moga byc ponownie wykorzystane w grze. W jednym ruchu mozna zbic wiecej niz jedna pare." << endl;
@@ -72,7 +76,7 @@ void printPenteRules() {
 	cout << "* drugi ruch czarnych musi byc poza centralnym kwadratem 5x5" << endl;
 	cout << "* pozostale ruchy zarowno czarnych jak i bialych moga być gdziekolwiek" << endl << endl;
 	cout << "uzyta instrukcja dostepna na: http://gomoku.5v.pl/index.php/zasady-pente" << endl;
-	std::system("pause");
+	system("pause");
 	return;
 }
 
@@ -96,7 +100,7 @@ void listSavesInWorkingDirectory() {
 
 int mainMenu() {
 	int choice;
-	std::system("cls");
+	system("cls");
 	cout << "1 - rozpocznij nowa gre hot seat" << endl;
 	cout << "2 - rozpocznij nowa gre vs komputer" << endl;
 	cout << "3 - wczytaj gre" << endl;
@@ -104,7 +108,7 @@ int mainMenu() {
 	cout << "5 - wyswielt zasady pente" << endl;
 	cout << "6 - wyjscie z programu" << endl;
 	while (!(cin >> choice)) {
-		std::system("cls");
+		system("cls");
 		cout << "1 - rozpocznij nowa gre hot seat" << endl;
 		cout << "2 - rozpocznij nowa gre vs komputer" << endl;
 		cout << "3 - wczytaj gre" << endl;
@@ -162,7 +166,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 	while (true) {
 		coordinates nextMove;
 		if (!currentSettings->graphical) {
-			nextMove = gameChoices();
+			nextMove = gameChoices(currentSettings);
 		}
 		else {
 			window->windowUpdate();
@@ -185,7 +189,10 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				}
 				delete currentGame;
 				delete currentSettings;
-				std::exit(EXIT_SUCCESS);
+				exit(EXIT_SUCCESS);
+			}
+			else if (nextMove.x == -4 && currentSettings->allowUndo) {
+				currentGame->unmakeMove();
 			}
 			else {
 				currentGame->makeMove(nextMove.x, nextMove.y);
@@ -198,7 +205,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 			if (currentGame->gameWon) {
 				currentGame->displayCredits();
-				std::system("pause");
+				system("pause");
 				delete currentGame;
 				break;
 			}
@@ -236,7 +243,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			if (currentGame->gameWon) {
 				window->closeWindow();
 				currentGame->displayCredits();
-				std::system("pause");
+				system("pause");
 				delete currentGame;
 				break;
 			}

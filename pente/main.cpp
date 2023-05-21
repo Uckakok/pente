@@ -117,48 +117,129 @@ int mainMenu() {
 	return choice;
 }
 
+vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
+	vector<pieceToDraw> allPieces;
+	for (int i = 0; i < BOARDSIZE; ++i) {
+		for (int j = 0; j < BOARDSIZE; ++j) {
+			if (currentGame->board[i][j] != EMPTY) {
+				pieceToDraw temp;
+				if (currentGame->board[i][j] == WHITE) {
+					temp.colour = WHITE;
+				}
+				else {
+					temp.colour = BLACK;
+				}
+				temp.x = i;
+				temp.y = j;
+				allPieces.push_back(temp);
+			}
+		}
+	}
+	return allPieces;
+}
+
 void gameLoop(penteBoard *currentGame, settings *currentSettings) {
-	if (currentSettings->prefferedConsole == ASCIICONSOLE) {
-		currentGame->printBoardToConsoleASCII();
-	}
-	else if (currentSettings->prefferedConsole == UTF8CONSOLE) {
-		currentGame->printBoardToConsoleUTF8();
-	}
-	while (true) {
-		coordinates nextMove;
-		nextMove = gameChoices();
-		if (nextMove.x == -1) {
-			currentGame->savePenteBoard();
-		}
-		else if (nextMove.x == -2) {
-			if (currentSettings->autosaveOnExit) {
-				currentGame->savePenteBoard(true);
-			}
-			delete currentGame;
-			break;
-		}
-		else if (nextMove.x == -3) {
-			if (currentSettings->autosaveOnExit) {
-				currentGame->savePenteBoard(true);
-			}
-			delete currentGame;
-			delete currentSettings;
-			std::exit(EXIT_SUCCESS);
-		}
-		else {
-			currentGame->makeMove(nextMove.x, nextMove.y);
-		}
+	graphicalInterface *window = NULL;
+	if (!currentSettings->graphical) {
 		if (currentSettings->prefferedConsole == ASCIICONSOLE) {
 			currentGame->printBoardToConsoleASCII();
 		}
 		else if (currentSettings->prefferedConsole == UTF8CONSOLE) {
 			currentGame->printBoardToConsoleUTF8();
 		}
-		if (currentGame->gameWon) {
-			currentGame->displayCredits();
-			std::system("pause");
-			delete currentGame;
-			break;
+	}
+	else {
+		window = new graphicalInterface();
+		window->blendEnable();
+		window->prepareVertexArray();
+		window->prepareVertexBuffer();
+		window->prepareShaders();
+		window->unbindStuff();
+		window->setupCallbacks();
+		window->setupMatrices();
+	}
+	vector<pieceToDraw> allPieces;
+	while (true) {
+		coordinates nextMove;
+		if (!currentSettings->graphical) {
+			nextMove = gameChoices();
+		}
+		else {
+			window->windowUpdate();
+			nextMove = fetchPosition();
+		}
+		if (!currentSettings->graphical) {
+			if (nextMove.x == -1) {
+				currentGame->savePenteBoard();
+			}
+			else if (nextMove.x == -2) {
+				if (currentSettings->autosaveOnExit) {
+					currentGame->savePenteBoard(true);
+				}
+				delete currentGame;
+				break;
+			}
+			else if (nextMove.x == -3) {
+				if (currentSettings->autosaveOnExit) {
+					currentGame->savePenteBoard(true);
+				}
+				delete currentGame;
+				delete currentSettings;
+				std::exit(EXIT_SUCCESS);
+			}
+			else {
+				currentGame->makeMove(nextMove.x, nextMove.y);
+			}
+			if (currentSettings->prefferedConsole == ASCIICONSOLE) {
+				currentGame->printBoardToConsoleASCII();
+			}
+			else if (currentSettings->prefferedConsole == UTF8CONSOLE) {
+				currentGame->printBoardToConsoleUTF8();
+			}
+			if (currentGame->gameWon) {
+				currentGame->displayCredits();
+				std::system("pause");
+				delete currentGame;
+				break;
+			}
+		}
+		else {
+			if (nextMove.x == -1) {
+				;
+			}
+			else if (nextMove.x == -2) {
+				window->resetPosition();
+				window->closeWindow();
+				string saveChoice;
+				cout << "Czy chcesz zapisac gre? (tak/nie)" << endl;
+				cin >> saveChoice;
+				if (saveChoice == "tak") {
+					currentGame->savePenteBoard();
+				}
+				else {
+					;
+				}
+				if (currentSettings->autosaveOnExit) {
+					currentGame->savePenteBoard(true);
+				}
+				delete currentGame;
+				delete window;
+				break;
+			}
+			else {
+				currentGame->makeMove(nextMove.x, nextMove.y);
+				allPieces = getAllPieces(currentGame);
+				window->newPiecesToDraw(allPieces);
+				window->resetPosition();
+				currentGame->printBoardToConsoleUTF8();
+			}
+			if (currentGame->gameWon) {
+				window->closeWindow();
+				currentGame->displayCredits();
+				std::system("pause");
+				delete currentGame;
+				break;
+			}
 		}
 	}
 }
@@ -166,7 +247,6 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 
 
 int main() {
-	testWindow();
 	settings *currentSettings = new settings();
 	while (true) {
 		string saveName;

@@ -14,7 +14,7 @@
 void GLClearError();
 bool GLLogCall(const char* function, const char* file, int line);
 
-class renderer {
+class Renderer {
 public:
 	void clear() const;
 	void draw(const vertexArray& va, const indexBuffer& ib, const Shader& shader) const;

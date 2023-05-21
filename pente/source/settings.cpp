@@ -15,19 +15,22 @@ public:
 	int prefferedConsole;
 	bool autosaveOnExit;
 	bool isPro;
+	bool graphical;
 	settings() {
 		ifstream settingsHandle;
 		bool possibleToRead = true;
 		string version;
 		int versionInt;
 		int consoleInt;
-		string console;
-		string autosave;
-		string pro;
+		bool graphicalBool;
 		bool proBool;
 		bool autosaveBool;
 		settingsHandle.open("settings.txt");
 		if (settingsHandle.is_open()) {
+			string console;
+			string autosave;
+			string pro;
+			string graphicalStr;
 			string word;
 			if (!(settingsHandle >> word)) {
 				possibleToRead = false;
@@ -101,12 +104,31 @@ public:
 			else {
 				possibleToRead = false;
 			}
+			if (!(settingsHandle >> word)) {
+				possibleToRead = false;
+			}
+			if (word != "graphical:") {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> graphicalStr)) {
+				possibleToRead = false;
+			}
+			if (graphicalStr == "true") {
+				graphicalBool = true;;
+			}
+			else if (graphicalStr == "false") {
+				graphicalBool = false;
+			}
+			else {
+				possibleToRead = false;
+			}
 			settingsHandle.close();
 			if (possibleToRead) {
 				prefferedConsole = consoleInt;
 				prefferedPenteVersion = versionInt;
 				autosaveOnExit = autosaveBool;
 				isPro = proBool;
+				graphical = graphicalBool;
 				return;
 			}
 		}
@@ -114,6 +136,7 @@ public:
 		prefferedPenteVersion = REGULARPENTE;
 		autosaveOnExit = true;
 		isPro = false;
+		graphical = false;
 	}
 
 	bool saveCurrentSettings() {
@@ -159,6 +182,16 @@ public:
 		else {
 			success = false;
 		}
+		ofs << "graphical: ";
+		if (graphical) {
+			ofs << "true" << endl;
+		}
+		else if (!graphical) {
+			ofs << "false" << endl;
+		}
+		else {
+			success = false;
+		}
 		ofs.close();
 		if (success) {
 			return true;
@@ -197,8 +230,9 @@ public:
 			}
 			cout << "3 - autozapis gry. Aktualny wybor: " << (autosaveOnExit ? "tak" : "nie") << endl;
 			cout << "4 - wersja pro. Aktualny wybor: " << (isPro ? "tak" : "nie") << endl;
-			cout << "5 - zapisz ustawienia na dysku" << endl;
-			cout << "6 - powrot" << endl << endl << endl << endl << endl;
+			cout << "5 - wersja graficzna. Aktualny wybor: " << (graphical ? "tak" : "nie") << endl;
+			cout << "6 - zapisz ustawienia na dysku" << endl;
+			cout << "7 - powrot" << endl << endl << endl << endl << endl;
 			cout << "na niektorych urzadzeniach znaki UTF moga nie wyswietlac sie poprawnie, wiec wtedy trzeba wybrac opcje ASCII." << endl;
 			int choice;
 			if (!(cin >> choice)) {
@@ -232,9 +266,12 @@ public:
 				isPro = !isPro;
 				break;
 			case 5:
-				saveCurrentSettings();
+				graphical = !graphical;
 				break;
 			case 6:
+				saveCurrentSettings();
+				break;
+			case 7:
 				repeat = false;
 				break;
 			default:

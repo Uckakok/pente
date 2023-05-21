@@ -30,11 +30,10 @@ public:
 	vertexBufferLayout()
 		: m_Stride(0) {}
 
-
 	template<typename T>
 	void push(unsigned int count) {
-		static_assert(false);
-	}
+		static_assert(false, "Nie wspierany typ danych");
+	};
 
 	template<>
 	void push<float>(unsigned int count) {

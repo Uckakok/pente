@@ -16,11 +16,11 @@ bool GLLogCall(const char* function, const char* file, int line) {
 	return true;
 }
 
-void renderer::clear() const {
+void Renderer::clear() const {
 	GLCall(glClear(GL_COLOR_BUFFER_BIT));
 }
 
-void renderer::draw(const vertexArray& va, const indexBuffer& ib, const Shader& shader) const {
+void Renderer::draw(const vertexArray& va, const indexBuffer& ib, const Shader& shader) const {
 	shader.bind();
 
 	va.bind();

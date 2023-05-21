@@ -1,0 +1,245 @@
+#include"settings.h"
+#include"declarations.h"
+#include<iostream>
+#include<fstream>
+#include<string>
+
+using namespace std;
+
+
+class settings {
+private:
+
+public:
+	int prefferedPenteVersion;
+	int prefferedConsole;
+	bool autosaveOnExit;
+	bool isPro;
+	settings() {
+		ifstream settingsHandle;
+		bool possibleToRead = true;
+		string version;
+		int versionInt;
+		int consoleInt;
+		string console;
+		string autosave;
+		string pro;
+		bool proBool;
+		bool autosaveBool;
+		settingsHandle.open("settings.txt");
+		if (settingsHandle.is_open()) {
+			string word;
+			if (!(settingsHandle >> word)) {
+				possibleToRead = false;
+			}
+			if (word != "penteVersion:") {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> version)) {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> word)) {
+				possibleToRead = false;
+			}
+			if (word != "console:") {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> console)) {
+				possibleToRead = false;
+			}
+			if (version == "regularPente") {
+				versionInt = REGULARPENTE;
+			}
+			else if (version == "keryoPente") {
+				versionInt = KERYOPENTE;
+			}
+			else {
+				possibleToRead = false;
+			}
+			if (console == "ASCII") {
+				consoleInt = ASCIICONSOLE;
+			}
+			else if (console == "UTF8") {
+				consoleInt = UTF8CONSOLE;
+			}
+			else {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> word)) {
+				possibleToRead = false;
+			}
+			if (word != "autosave:") {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> autosave)) {
+				possibleToRead = false;
+			}
+			if (autosave == "true") {
+				autosaveBool = true;
+			}
+			else if (autosave == "false") {
+				autosaveBool = false;
+			}
+			else {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> word)) {
+				possibleToRead = false;
+			}
+			if (word != "pro:") {
+				possibleToRead = false;
+			}
+			if (!(settingsHandle >> pro)) {
+				possibleToRead = false;
+			}
+			if (pro == "true") {
+				proBool = true;
+			}
+			else if (pro == "false") {
+				proBool = false;
+			}
+			else {
+				possibleToRead = false;
+			}
+			settingsHandle.close();
+			if (possibleToRead) {
+				prefferedConsole = consoleInt;
+				prefferedPenteVersion = versionInt;
+				autosaveOnExit = autosaveBool;
+				isPro = proBool;
+				return;
+			}
+		}
+		prefferedConsole = UTF8CONSOLE;
+		prefferedPenteVersion = REGULARPENTE;
+		autosaveOnExit = true;
+		isPro = false;
+	}
+
+	bool saveCurrentSettings() {
+		bool success = true;
+		ofstream ofs("settings.txt", ofstream::trunc);
+		ofs << "penteVersion: ";
+		if (prefferedPenteVersion == REGULARPENTE) {
+			ofs << "regularPente" << endl;
+		}
+		else if (prefferedPenteVersion == KERYOPENTE) {
+			ofs << "keryoPente" << endl;
+		}
+		else {
+			success = false;
+		}
+		ofs << "console: ";
+		if (prefferedConsole == ASCIICONSOLE) {
+			ofs << "ASCII" << endl;
+		}
+		else if (prefferedConsole == UTF8CONSOLE) {
+			ofs << "UTF8" << endl;
+		}
+		else {
+			success = false;
+		}
+		ofs << "autosave: ";
+		if (autosaveOnExit) {
+			ofs << "true" << endl;
+		}
+		else if (!autosaveOnExit) {
+			ofs << "false" << endl;
+		}
+		else {
+			success = false;
+		}
+		ofs << "pro: ";
+		if (isPro) {
+			ofs << "true" << endl;
+		}
+		else if (!isPro) {
+			ofs << "false" << endl;
+		}
+		else {
+			success = false;
+		}
+		ofs.close();
+		if (success) {
+			return true;
+		}
+		else {
+			ofstream ofs("settings.txt", ofstream::trunc);
+			ofs.close();
+			return false;
+		}
+	}
+
+	void changeSettings() {
+		bool repeat = true;
+		do {
+			system("cls");
+			repeat = true;
+			cout << "1 - wersja pente. Aktualny wybor: ";
+			if (prefferedPenteVersion == REGULARPENTE) {
+				cout << "zwyczajne pente" << endl;
+			}
+			else if (prefferedPenteVersion == KERYOPENTE) {
+				cout << "keryo-pente" << endl;
+			}
+			else {
+				cout << "nieznany rodzaj pente." << endl;
+			}
+			cout << "2 - rodzaj konsoli. Aktualny wybor: ";
+			if (prefferedConsole == ASCIICONSOLE) {
+				cout << "ASCII" << endl;
+			}
+			else if (prefferedConsole == UTF8CONSOLE) {
+				cout << "UTF-8" << endl;
+			}
+			else {
+				cout << "nieznany rodzaj konsoli" << endl;
+			}
+			cout << "3 - autozapis gry. Aktualny wybor: " << (autosaveOnExit ? "tak" : "nie") << endl;
+			cout << "4 - wersja pro. Aktualny wybor: " << (isPro ? "tak" : "nie") << endl;
+			cout << "5 - zapisz ustawienia na dysku" << endl;
+			cout << "6 - powrot" << endl << endl << endl << endl << endl;
+			cout << "na niektorych urzadzeniach znaki UTF moga nie wyswietlac sie poprawnie, wiec wtedy trzeba wybrac opcje ASCII." << endl;
+			int choice;
+			if (!(cin >> choice)) {
+				system("cls");
+				repeat = true;
+				cin.clear();
+				cin.ignore(1000, '\n');
+				continue;
+			}
+			switch (choice) {
+			case 1:
+				if (prefferedPenteVersion == REGULARPENTE) {
+					prefferedPenteVersion = KERYOPENTE;
+				}
+				else {
+					prefferedPenteVersion = REGULARPENTE;
+				}
+				break;
+			case 2:
+				if (prefferedConsole == UTF8CONSOLE) {
+					prefferedConsole = ASCIICONSOLE;
+				}
+				else {
+					prefferedConsole = UTF8CONSOLE;
+				}
+				break;
+			case 3:
+				autosaveOnExit = !autosaveOnExit;
+				break;
+			case 4:
+				isPro = !isPro;
+				break;
+			case 5:
+				saveCurrentSettings();
+				break;
+			case 6:
+				repeat = false;
+				break;
+			default:
+				repeat = true;
+			}
+		} while (repeat);
+	}
+};

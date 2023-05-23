@@ -68,6 +68,7 @@ public:
 	void closeWindow();
 	void resetPosition();
 	void newPiecesToDraw(const std::vector<pieceToDraw>& newPieces);
+	bool shouldCloseWindow();
 };
 
 coordinates fetchPosition();

@@ -10,7 +10,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	{
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		std::cout << xpos << ":" << ypos << std::endl;
 		communication.x = round((xpos - 60) / disBetweenSquares);
 		communication.y = round((ypos - 60) / disBetweenSquares);
 	}
@@ -122,6 +121,7 @@ void graphicalInterface::windowUpdate()
 	for (auto& piece : pieces) {
 		if (piece.colour == WHITE) whitePiece->bind();
 		else if (piece.colour == BLACK) blackPiece->bind();
+		else continue;
 		float x = piece.x * disBetweenSquares + 60;
 		float y = piece.y * disBetweenSquares + 60;
 		translationB = new glm::vec3(y * 4, (540 - x) * 4, 0);
@@ -155,6 +155,16 @@ void graphicalInterface::resetPosition()
 void graphicalInterface::newPiecesToDraw(const std::vector<pieceToDraw>& newPieces)
 {
 	pieces = newPieces;
+}
+
+bool graphicalInterface::shouldCloseWindow()
+{
+	if (glfwWindowShouldClose(window)) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 

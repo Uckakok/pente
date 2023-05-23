@@ -9,6 +9,8 @@
 #include"penteBoard.h"
 #include"settings.h"
 #include"graphicalMode.h"
+#include"botPlayer.h"
+#include<array>
 
 namespace fs = std::experimental::filesystem;
 using namespace std;
@@ -40,6 +42,9 @@ coordinates gameChoices(settings *currentSettings) {
 				return returnValue;
 			case '4':
 				returnValue.x = -4;
+				return returnValue;
+			case '5':
+				returnValue.x = -5;
 				return returnValue;
 			}
 		}
@@ -100,14 +105,7 @@ void listSavesInWorkingDirectory() {
 
 int mainMenu() {
 	int choice;
-	system("cls");
-	cout << "1 - rozpocznij nowa gre hot seat" << endl;
-	cout << "2 - rozpocznij nowa gre vs komputer" << endl;
-	cout << "3 - wczytaj gre" << endl;
-	cout << "4 - ustawienia" << endl;
-	cout << "5 - wyswielt zasady pente" << endl;
-	cout << "6 - wyjscie z programu" << endl;
-	while (!(cin >> choice)) {
+	do {
 		system("cls");
 		cout << "1 - rozpocznij nowa gre hot seat" << endl;
 		cout << "2 - rozpocznij nowa gre vs komputer" << endl;
@@ -115,10 +113,12 @@ int mainMenu() {
 		cout << "4 - ustawienia" << endl;
 		cout << "5 - wyswielt zasady pente" << endl;
 		cout << "6 - wyjscie z programu" << endl;
+		if (cin >> choice) {
+			return choice;
+		}
 		cin.clear();
 		cin.ignore(1000, '\n');
-	}
-	return choice;
+	} while (true);
 }
 
 vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
@@ -169,6 +169,8 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			nextMove = gameChoices(currentSettings);
 		}
 		else {
+			allPieces = getAllPieces(currentGame);
+			window->newPiecesToDraw(allPieces);
 			window->windowUpdate();
 			nextMove = fetchPosition();
 		}
@@ -193,6 +195,24 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 			else if (nextMove.x == -4 && currentSettings->allowUndo) {
 				currentGame->unmakeMove();
+			}
+			else if (nextMove.x == -5) {/*
+				vector<chain> searchedMoves = botPlayer::analyzeForChains(currentGame, !currentGame->isWhiteTurn, 3);
+				vector<coordinates> blockingChains = botPlayer::blockingChains(currentGame, searchedMoves);
+				cout << "blocking chains:" << endl;
+				for (auto& block : blockingChains) {
+					cout << block.x << ", " << block.y << endl;
+				}
+				cout << "takings:" << endl;
+				vector<coordinates> takings = botPlayer::analyzeForTakings(currentGame);
+				for (auto& take : takings) {
+					cout << "x: " << take.x << ", y: " << take.y << endl;
+				}
+				cout << "two gap two:" << endl;
+				vector<coordinates> gaps = botPlayer::analyzeForTwoGapTwo(currentGame, !currentGame->isWhiteTurn);
+				for (auto& gap : gaps) {
+					cout << "x: " << gap.x << ", y: " << gap.y << endl;
+				}*/;
 			}
 			else {
 				currentGame->makeMove(nextMove.x, nextMove.y);
@@ -235,14 +255,39 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 			else {
 				currentGame->makeMove(nextMove.x, nextMove.y);
-				allPieces = getAllPieces(currentGame);
-				window->newPiecesToDraw(allPieces);
 				window->resetPosition();
-				currentGame->printBoardToConsoleUTF8();
+				currentGame->printBoardToConsoleUTF8(); 
+				//testowe
+				vector<chain> searchedMoves = botPlayer::analyzeForChains(currentGame, !currentGame->isWhiteTurn, 3);
+				array<vector<coordinates>, 4> blockingChains = botPlayer::blockingChains(currentGame, searchedMoves);
+				cout << "blocking chains:" << endl;
+				for (auto& priority : blockingChains) {
+					for (auto& block : priority) {
+						cout << block.x << ", " << block.y << endl;
+					}
+				}
+				cout << "takings:" << endl;
+				vector<coordinates> takings = botPlayer::analyzeForTakings(currentGame);
+				for (auto& take : takings) {
+					cout << "x: " << take.x << ", y: " << take.y << endl;
+				}
+				cout << "two gap two:" << endl;
+				vector<coordinates> gaps = botPlayer::analyzeForFourWithGap(currentGame, !currentGame->isWhiteTurn);
+				for (auto& gap : gaps) {
+					cout << "x: " << gap.x << ", y: " << gap.y << endl;
+				}
+				//testowe
 			}
 			if (currentGame->gameWon) {
-				window->closeWindow();
+				allPieces = getAllPieces(currentGame);
+				window->newPiecesToDraw(allPieces);
+				window->windowUpdate();
 				currentGame->displayCredits();
+				while (true) {
+					if (window->shouldCloseWindow()) break;
+					window->windowUpdate();
+				}
+				window->closeWindow();
 				system("pause");
 				delete currentGame;
 				break;

@@ -258,29 +258,15 @@ bool penteBoard::makeMove(int x, int y)
 		bool shouldRemove[8] = { false };
 		for (int j = 1; j < 4; ++j) {
 			if (x + j * dir[i][1] >= 0 && x + j * dir[i][1] < BOARDSIZE && y + j * dir[i][0] >= 0 && y + j * dir[i][0] < BOARDSIZE) {
-				if (isWhiteTurn) {
-					if (board[y + j * dir[i][0]][x + j * dir[i][1]] == BLACK && canContinue[i]) {
-						enemies[i]++;
-					}
-					else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == WHITE && canContinue[i]) {
-						shouldRemove[i] = true;
-						canContinue[i] = false;
-					}
-					else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == EMPTY) {
-						canContinue[i] = false;
-					}
+				if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? BLACK : WHITE) && canContinue[i]) {
+					enemies[i]++;
 				}
-				else {
-					if (board[y + j * dir[i][0]][x + j * dir[i][1]] == WHITE && canContinue[i]) {
-						enemies[i]++;
-					}
-					else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == BLACK && canContinue[i]) {
-						shouldRemove[i] = true;
-						canContinue[i] = false;
-					}
-					else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == EMPTY) {
-						canContinue[i] = false;
-					}
+				else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? WHITE : BLACK) && canContinue[i]) {
+					shouldRemove[i] = true;
+					canContinue[i] = false;
+				}
+				else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == EMPTY) {
+					canContinue[i] = false;
 				}
 			}
 		}
@@ -291,55 +277,41 @@ bool penteBoard::makeMove(int x, int y)
 					break;
 				}
 			case 2:
-			case 1:
 				for (int j = 1; j < 4; ++j) {
-					if (isWhiteTurn) {
-						if (board[y + j * dir[i][0]][x + j * dir[i][1]] == BLACK) {
-							board[y + j * dir[i][0]][x + j * dir[i][1]] = EMPTY;
-							takesForWhite++;
-							coordToSave.x = x + j * dir[i][1];
-							coordToSave.y = y + j * dir[i][0];
-							moveToSave.push_back(coordToSave);
-						}
-						else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == WHITE) {
-							break;
-						}
+					if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? BLACK : WHITE)) {
+						board[y + j * dir[i][0]][x + j * dir[i][1]] = EMPTY;
+						if (isWhiteTurn) takesForWhite++;
+						else takesForBlack++;
+						coordToSave.x = x + j * dir[i][1];
+						coordToSave.y = y + j * dir[i][0];
+						moveToSave.push_back(coordToSave);
 					}
-					else {
-						if (board[y + j * dir[i][0]][x + j * dir[i][1]] == WHITE) {
-							board[y + j * dir[i][0]][x + j * dir[i][1]] = EMPTY;
-							takesForBlack++;
-							coordToSave.x = x + j * dir[i][1];
-							coordToSave.y = y + j * dir[i][0];
-							moveToSave.push_back(coordToSave);
-						}
-						else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == BLACK) {
-							break;
-						}
+					else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? WHITE : BLACK)) {
+						break;
 					}
 				}
+				break;
+			case 1:
+				break;
+			case 0:
+				break;
+			default:
+				cout << "Nierozpoznany blad programu podczas zbijania : " << enemies[i] << endl;
 			}
 		}
 	}
 
-	if (penteVariant == REGULARPENTE) {
-		if (takesForWhite >= 10) {
+	switch (penteVariant) {
+	case REGULARPENTE:
+		if (takesForWhite >= 10 || takesForBlack >= 10) {
 			gameWon = true;
-			winner = WHITE;
+			winner = isWhiteTurn ? WHITE : BLACK;
 		}
-		if (takesForBlack >= 10) {
+		break;
+	case KERYOPENTE:
+		if (takesForWhite >= 15 || takesForBlack >= 15) {
 			gameWon = true;
-			winner = BLACK;
-		}
-	}
-	else if (penteVariant == KERYOPENTE) {
-		if (takesForWhite >= 15) {
-			gameWon = true;
-			winner = WHITE;
-		}
-		if (takesForBlack >= 15) {
-			gameWon = true;
-			winner = BLACK;
+			winner = isWhiteTurn ? WHITE : BLACK;
 		}
 	}
 
@@ -367,3 +339,4 @@ void penteBoard::unmakeMove()
 	moveHistory.pop_back();
 	isWhiteTurn = !isWhiteTurn;
 }
+

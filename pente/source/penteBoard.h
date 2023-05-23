@@ -38,5 +38,6 @@ public:
 	bool makeMove(int x, int y);
 	void displayCredits();
 	void unmakeMove();
+
 	
 };

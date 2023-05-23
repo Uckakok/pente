@@ -11,6 +11,7 @@ settings::settings()
 	bool proBool;
 	bool autosaveBool;
 	bool undoBool;
+	int AIInt;
 	settingsHandle.open("settings.txt");
 	if (settingsHandle.is_open()) {
 		string console;
@@ -19,6 +20,7 @@ settings::settings()
 		string undo;
 		string graphicalStr;
 		string word;
+
 		if (!(settingsHandle >> word)) {
 			possibleToRead = false;
 		}
@@ -127,6 +129,15 @@ settings::settings()
 		else {
 			possibleToRead = false;
 		}
+		if (!(settingsHandle >> word)) {
+			possibleToRead = false;
+		}
+		if (word != "AI:") {
+			possibleToRead = false;
+		}
+		if (!(settingsHandle >> AIInt)) {
+			possibleToRead = false;
+		}
 		settingsHandle.close();
 		if (possibleToRead) {
 			prefferedConsole = consoleInt;
@@ -135,6 +146,7 @@ settings::settings()
 			isPro = proBool;
 			graphical = graphicalBool;
 			allowUndo = undoBool;
+			AIDifficulty = AIInt;
 			return;
 		}
 	}
@@ -144,6 +156,7 @@ settings::settings()
 	isPro = false;
 	graphical = false;
 	allowUndo = false;
+	AIDifficulty = 2;
 }
 
 bool settings::saveCurrentSettings()
@@ -210,6 +223,8 @@ bool settings::saveCurrentSettings()
 	else {
 		success = false;
 	}
+	ofs << "AI: ";
+	ofs << AIDifficulty;
 	ofs.close();
 	if (success) {
 		return true;
@@ -251,8 +266,32 @@ void settings::changeSettings()
 		cout << "4 - wersja pro. Aktualny wybor: " << (isPro ? "tak" : "nie") << endl;
 		cout << "5 - wersja graficzna. Aktualny wybor: " << (graphical ? "tak" : "nie") << endl;
 		cout << "6 - zezwol na cofanie ruchow. Aktualny wybor: " << (allowUndo ? "tak" : "nie") << endl;
-		cout << "7 - zapisz ustawienia na dysku" << endl;
-		cout << "8 - powrot" << endl << endl << endl << endl << endl;
+		cout << "7 - Poziom trudnosci AI. Aktualny wybor: ";
+		switch (AIDifficulty) {
+		case -1:
+			cout << "losowy";
+			break;
+		case 0:
+			cout << "latwy";
+			break;
+		case 1:
+			cout << "sredni";
+			break;
+		case 2:
+			cout << "zaawansowany";
+			break;
+		case 3:
+			cout << "ekspercki";
+			break;
+		case 4:
+			cout << "mistrzowski";
+			break;
+		default :
+			cout << "nierozpoznany";
+		}
+		cout << endl;
+		cout << "8 - zapisz ustawienia na dysku" << endl;
+		cout << "9 - powrot" << endl << endl << endl << endl << endl;
 		cout << "na niektorych urzadzeniach znaki UTF moga nie wyswietlac sie poprawnie, wiec wtedy trzeba wybrac opcje ASCII." << endl;
 		int choice;
 		if (!(cin >> choice)) {
@@ -290,10 +329,15 @@ void settings::changeSettings()
 			break;
 		case 6:
 			allowUndo = !allowUndo;
+			break;
 		case 7:
-			saveCurrentSettings();
+			AIDifficulty++;
+			if (AIDifficulty > 4) AIDifficulty = -1;
 			break;
 		case 8:
+			saveCurrentSettings();
+			break;
+		case 9:
 			repeat = false;
 			break;
 		default:

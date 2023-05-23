@@ -132,10 +132,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="source\botPlayer.cpp" />
+    <ClCompile Include="source\analyzeBoard.cpp" />
     <ClCompile Include="source\graphicalMode.cpp" />
     <ClCompile Include="source\indexBuffer.cpp" />
     <ClCompile Include="source\penteBoard.cpp" />
+    <ClCompile Include="source\penteEngine.cpp" />
     <ClCompile Include="source\Renderer.cpp" />
     <ClCompile Include="source\settings.cpp" />
     <ClCompile Include="source\shader.cpp" />
@@ -146,11 +147,12 @@
     <ClCompile Include="source\vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\botPlayer.h" />
+    <ClInclude Include="source\analyzeBoard.h" />
     <ClInclude Include="source\declarations.h" />
     <ClInclude Include="source\graphicalMode.h" />
     <ClInclude Include="source\indexBuffer.h" />
     <ClInclude Include="source\penteBoard.h" />
+    <ClInclude Include="source\penteEngine.h" />
     <ClInclude Include="source\Renderer.h" />
     <ClInclude Include="source\settings.h" />
     <ClInclude Include="source\shader.h" />

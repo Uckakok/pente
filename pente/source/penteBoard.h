@@ -11,6 +11,9 @@
 #include<filesystem>
 #include<iterator>
 
+class computerPlayer;
+class advancedComputer;
+
 using namespace std;
 
 class penteBoard {
@@ -19,8 +22,12 @@ private:
 	int takesForBlack = 0;
 	vector<vector<coordinates>> moveHistory;
 	int winner = -1;
-	bool isPro;
+	int minMoves = 0;
 public:
+	computerPlayer *AIInstance;
+	bool isAgainstAI = false;
+	bool isAIWhite = false;
+	bool isPro;
 	bool isWhiteTurn = false;
 	int penteVariant;
 	bool gameWon = false;
@@ -34,6 +41,7 @@ public:
 	void printBoardToConsoleASCII();
 	void printBoardToConsoleUTF8();
 	bool checkIfMoveLegal(int x, int y);
+	int getMoveHistorySize();
 	bool checkIfMoveLegalProPente(int x, int y);
 	bool makeMove(int x, int y);
 	void displayCredits();

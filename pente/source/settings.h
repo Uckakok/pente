@@ -13,6 +13,7 @@ class settings {
 private:
 
 public:
+	int AIDifficulty;
 	int prefferedPenteVersion;
 	int prefferedConsole;
 	bool autosaveOnExit;

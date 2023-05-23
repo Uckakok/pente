@@ -41,6 +41,8 @@ penteBoard::penteBoard(string pathToLoad)
 		gameHandle >> takesForWhite;
 		gameHandle >> takesForBlack;
 		gameHandle >> isWhiteTurn;
+		gameHandle >> minMoves;
+		moveHistory.resize(minMoves);
 		for (int i = 0; i < BOARDSIZE; ++i) {
 			for (int j = 0; j < BOARDSIZE; ++j) {
 				gameHandle >> board[i][j];
@@ -71,7 +73,7 @@ void penteBoard::savePenteBoard(bool autosave)
 		cout << "Nie udalo sie zapisac pliku gry." << endl;
 		system("pause");
 	}
-	ofs << isPro << " " << penteVariant << " " << takesForWhite << " " << takesForBlack << " " << isWhiteTurn << endl;;
+	ofs << isPro << " " << penteVariant << " " << takesForWhite << " " << takesForBlack << " " << isWhiteTurn << moveHistory.size() << endl;;
 	for (int i = 0; i < BOARDSIZE; ++i) {
 		for (int j = 0; j < BOARDSIZE; ++j) {
 			ofs << board[i][j] << " ";
@@ -176,6 +178,10 @@ bool penteBoard::checkIfMoveLegal(int x, int y)
 	return true;
 }
 
+int penteBoard::getMoveHistorySize() {
+	return moveHistory.size();
+}
+
 bool penteBoard::checkIfMoveLegalProPente(int x, int y)
 {
 	int boardMiddle = (int)((BOARDSIZE) / 2);
@@ -207,11 +213,11 @@ bool penteBoard::checkIfMoveLegalProPente(int x, int y)
 bool penteBoard::makeMove(int x, int y)
 {
 	if (!isPro && !checkIfMoveLegal(x, y)) {
-		cout << "Podany zostal nieprawidlowy ruch!\n" << endl;
+		cout << "Podany zostal nieprawidlowy ruch!" << x << ", " << y << endl;
 		return false;
 	}
 	if (isPro && !checkIfMoveLegalProPente(x, y)) {
-		cout << "Podany zostal nieprawidlowy ruch!\n" << endl;
+		cout << "Podany zostal nieprawidlowy ruch!" << x << ", " << y << endl;
 		return false;
 	}
 	board[y][x] = isWhiteTurn ? WHITE : BLACK;
@@ -327,7 +333,7 @@ void penteBoard::displayCredits()
 
 void penteBoard::unmakeMove()
 {
-	if (moveHistory.size() == 0) {
+	if (moveHistory.size() == 0 || moveHistory.size() <= minMoves) {
 		cout << "brak ruchów do cofania" << endl;
 		return;
 	}

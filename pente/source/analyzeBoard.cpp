@@ -1,27 +1,27 @@
-#include "botPlayer.h"
+#include "analyzeBoard.h"
 
 
-vector<coordinates> botPlayer::analyzeForTakings(penteBoard * boardToAnalyze)
+vector<coordinates> analyzeBoard::analyzeForTakings(penteBoard * boardToAnalyze, bool whitePlayer)
 {
 	vector<coordinates> possibleTakings;
 	int dir[][2] = { { 0, 1 }, {0, -1}, {1, 0}, {-1, 0}, {-1, -1}, {1, 1 }, {-1, 1}, {1, -1} };
 	for (int x = 0; x < BOARDSIZE; ++x) {
 		for (int y = 0; y < BOARDSIZE; ++y) {
-			if (boardToAnalyze->board[y][x] != (boardToAnalyze->isWhiteTurn ? WHITE : BLACK)) {
+			if (boardToAnalyze->board[y][x] != (whitePlayer ? WHITE : BLACK)) {
 				continue;
 			}
 			bool canContinue[8] = { true, true, true, true, true, true, true, true };
 			for (int i = 0; i < 8; ++i) {
-				coordinates temp;
+				coordinates temp = { -1, -1 };
 				int tempEnemies = 0;
 				for (int j = 1; j < 4; ++j) {
 					if (x + j * dir[i][1] < 0 || x + j * dir[i][1] >= BOARDSIZE || y + j * dir[i][0] < 0 || y + j * dir[i][0] >= BOARDSIZE) {
 						break;
 					}
-					if (boardToAnalyze->board[y + j * dir[i][0]][x + j * dir[i][1]] == (boardToAnalyze->isWhiteTurn ? BLACK : WHITE) && canContinue[i]) {
+					if (boardToAnalyze->board[y + j * dir[i][0]][x + j * dir[i][1]] == (whitePlayer ? BLACK : WHITE) && canContinue[i]) {
 						tempEnemies++;
 					}
-					else if (boardToAnalyze->board[y + j * dir[i][0]][x + j * dir[i][1]] == (boardToAnalyze->isWhiteTurn ? WHITE : BLACK) && canContinue[i]) {
+					else if (boardToAnalyze->board[y + j * dir[i][0]][x + j * dir[i][1]] == (whitePlayer ? WHITE : BLACK) && canContinue[i]) {
 						canContinue[i] = false;
 					}
 					else if (boardToAnalyze->board[y + j * dir[i][0]][x + j * dir[i][1]] == EMPTY) {
@@ -31,7 +31,7 @@ vector<coordinates> botPlayer::analyzeForTakings(penteBoard * boardToAnalyze)
 					}
 					
 				}
-				if ((tempEnemies == 2) || (boardToAnalyze->penteVariant == KERYOPENTE && tempEnemies == 3)) {
+				if (temp.x != -1 && (tempEnemies == 2) || (boardToAnalyze->penteVariant == KERYOPENTE && tempEnemies == 3)) {
 					possibleTakings.push_back(temp);
 				}
 			}
@@ -40,14 +40,14 @@ vector<coordinates> botPlayer::analyzeForTakings(penteBoard * boardToAnalyze)
 	return possibleTakings;
 }
 
-vector<chain> botPlayer::analyzeForChains(penteBoard * boardToAnalyze, bool whitePlayer, int minLineLength)
+vector<chain> analyzeBoard::analyzeForChains(penteBoard * boardToAnalyze, bool whitePlayer, int lineLength)
 {
 	vector<chain> allChains;
 	coordinates blockingPos[2];
 	coordinates noBlocking = { -1, -1 };
 	int dir[][2] = { {1, 0}, {-1, 0}, { 0, 1 }, {0, -1}, {-1, -1}, {1, 1 }, {-1, 1}, {1, -1} };
 	for (int x = 0; x < BOARDSIZE; ++x) {
-		if (x % minLineLength != 0) {
+		if (x % lineLength != 0) {
 			continue;
 		}
 		for (int y = 0; y < BOARDSIZE; ++y) {
@@ -104,7 +104,7 @@ vector<chain> botPlayer::analyzeForChains(penteBoard * boardToAnalyze, bool whit
 						break;
 					}
 				}
-				if (inLine >= minLineLength) {
+				if (inLine == lineLength) {
 					line.dirIndex = i;
 					line.length = inLine;
 					allChains.push_back(line);
@@ -115,7 +115,7 @@ vector<chain> botPlayer::analyzeForChains(penteBoard * boardToAnalyze, bool whit
 	}
 	for (int x = 0; x < BOARDSIZE; ++x) {
 		for (int y = 0; y < BOARDSIZE; ++y) {
-			if (y % minLineLength != 0) {
+			if (y % lineLength != 0) {
 				continue;
 			}
 			if (boardToAnalyze->board[y][x] != (whitePlayer ? WHITE : BLACK)) {
@@ -172,7 +172,7 @@ vector<chain> botPlayer::analyzeForChains(penteBoard * boardToAnalyze, bool whit
 					break;
 				}
 			}
-			if (inLine >= minLineLength) {
+			if (inLine == lineLength) {
 				line.dirIndex = 0;
 				line.length = inLine;
 				allChains.push_back(line);
@@ -185,11 +185,10 @@ vector<chain> botPlayer::analyzeForChains(penteBoard * boardToAnalyze, bool whit
 
 
 
-vector<coordinates> botPlayer::analyzeForFourWithGap(penteBoard * boardToAnalyze, bool whitePlayer)
+vector<coordinates> analyzeBoard::analyzeForFourWithGap(penteBoard * boardToAnalyze, bool whitePlayer)
 {
 	vector<coordinates> fourWithGap;
 	int dir[][2] = { {0, 1}, {1, 0}, {1, 1 }, {1, -1} };
-	bool scheme[] = { true, true, false, true, true };
 	for (int x = 0; x < BOARDSIZE; ++x) {
 		for (int y = 0; y < BOARDSIZE; ++y) {
 			if (boardToAnalyze->board[y][x] != (whitePlayer ? WHITE : BLACK)) {
@@ -197,7 +196,6 @@ vector<coordinates> botPlayer::analyzeForFourWithGap(penteBoard * boardToAnalyze
 			}
 			for (int i = 0; i < 4; ++i) {
 				bool chainPossible = true;
-				int inLine[4] = { 0, 0, 0, 0 };
 				if (x + 5 * dir[i][1] < 0 && x + 5 * dir[i][1] >= BOARDSIZE && y + 5 * dir[i][0] < 0 && y + 5 * dir[i][0] >= BOARDSIZE) {
 					continue;
 				}
@@ -205,28 +203,19 @@ vector<coordinates> botPlayer::analyzeForFourWithGap(penteBoard * boardToAnalyze
 					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == EMPTY &&
 					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
 					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
-					coordinates temp;
-					temp.x = x + 2 * dir[i][1];
-					temp.y = y + 2 * dir[i][0];
-					fourWithGap.push_back(temp);
+					fourWithGap.push_back({ x + 2 * dir[i][1] , y + 2 * dir[i][0]});
 				}
-				if (boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == EMPTY &&
-					boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
 					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
 					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
-					coordinates temp;
-					temp.x = x + 1 * dir[i][1];
-					temp.y = y + 1 * dir[i][0];
-					fourWithGap.push_back(temp);
+					fourWithGap.push_back({ x + 1 * dir[i][1] , y + 1 * dir[i][0] });
 				}
 				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
-					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
-					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == EMPTY &&
 					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
-					coordinates temp;
-					temp.x = x + 3 * dir[i][1];
-					temp.y = y + 3 * dir[i][0];
-					fourWithGap.push_back(temp);
+					fourWithGap.push_back({ x + 3 * dir[i][1] , y + 3 * dir[i][0] });
 				}
 			}
 		}
@@ -234,10 +223,10 @@ vector<coordinates> botPlayer::analyzeForFourWithGap(penteBoard * boardToAnalyze
 	return fourWithGap;
 }
 
-array<vector<coordinates>, 4> botPlayer::blockingChains(penteBoard * boardToAnalyze, vector<chain> chains)
+array<vector<coordinates>, 5> analyzeBoard::blockingChains(penteBoard * boardToAnalyze, vector<chain> chains)
 {
 	int dir[][2] = { {1, 0}, {-1, 0}, { 0, 1 }, {0, -1}, {-1, -1}, {1, 1 }, {-1, 1}, {1, -1} };
-	array<vector<coordinates>, 4> priorities;
+	array<vector<coordinates>, 5> priorities;
 	for (auto & chain : chains) {
 		coordinates backBlock;
 		coordinates frontBlock;
@@ -261,8 +250,12 @@ array<vector<coordinates>, 4> botPlayer::blockingChains(penteBoard * boardToAnal
 			}
 		}
 		if (chain.length == 4) {
-			if (back) priorities[0].push_back(backBlock);
-			if (front) priorities[0].push_back(frontBlock);
+			if (back) {
+				priorities[0].push_back(backBlock);
+			}
+			if (front) { 
+				priorities[0].push_back(frontBlock); 
+			}
 		}
 		else if (chain.length == 3) {
 			if (blocksNum == 1) {
@@ -276,7 +269,8 @@ array<vector<coordinates>, 4> botPlayer::blockingChains(penteBoard * boardToAnal
 		}
 		else if (chain.length == 2) {
 			if (blocksNum == 1) {
-				;
+				if (back) priorities[0].push_back(backBlock);
+				if (front) priorities[0].push_back(frontBlock);
 			}
 			else if (blocksNum == 2) {
 				priorities[3].push_back(backBlock);
@@ -287,8 +281,85 @@ array<vector<coordinates>, 4> botPlayer::blockingChains(penteBoard * boardToAnal
 	return priorities;
 }
 
-
-
-void botPlayer::evaluateBoard(penteBoard * boardToAnalyze)
+array<vector<coordinates>, 8> analyzeBoard::findFieldsAdjacentToPieces(penteBoard * boardToAnalyze, bool whitePlayer)
 {
+	array<vector<coordinates>, 8> sortedTiles;
+
+	vector<coordinates> allTiles;
+	vector<coordinatesAndNum> combined;
+
+	int dir[][2] = { { 0, 1 }, {0, -1}, {1, 0}, {-1, 0}, {-1, -1}, {1, 1 }, {-1, 1}, {1, -1} };
+	
+	for (int x = 0; x < BOARDSIZE; ++x) {
+		for (int y = 0; y < BOARDSIZE; ++y) {
+			if (boardToAnalyze->board[y][x] != (whitePlayer ? WHITE : BLACK)) {
+				continue;
+			}
+			for (int i = 0; i < 8; ++i) {
+				if (x + dir[i][1] < 0 || x + dir[i][1] >= BOARDSIZE || y + dir[i][0] < 0 || y + dir[i][0] >= BOARDSIZE) {
+					continue;
+				}
+				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == EMPTY) {
+					allTiles.push_back({ x + dir[i][1] , y + dir[i][0] });
+				}
+			}
+		}
+	}
+	while (allTiles.size() != 0) {
+		coordinates currentlySearched = allTiles.front();
+		combined.push_back({ allTiles.front().x, allTiles.front().y, 1 });
+		auto i = begin(allTiles);
+		i = allTiles.erase(i);
+		while (i != end(allTiles)) {
+			if (*i == currentlySearched) {
+				combined.back().num++;
+				i = allTiles.erase(i);
+			}
+			else
+				++i;
+		}
+	}
+	for (auto &element : combined) {
+		sortedTiles[element.num - 1].push_back((coordinates)element);
+	}
+	
+	return sortedTiles;
+}
+
+vector<coordinates> analyzeBoard::analyzeForThreeWithGap(penteBoard * boardToAnalyze, bool whitePlayer)
+{
+	vector<coordinates> threeWithGap;
+	int dir[][2] = { { 0, 1 }, {0, -1}, {1, 0}, {-1, 0}, {-1, -1}, {1, 1 }, {-1, 1}, {1, -1} };
+	for (int x = 0; x < BOARDSIZE; ++x) {
+		for (int y = 0; y < BOARDSIZE; ++y) {
+			if (boardToAnalyze->board[y][x] != (whitePlayer ? WHITE : BLACK)) {
+				continue;
+			}
+			for (int i = 0; i < 8; ++i) {
+				bool chainPossible = true;
+				if (x + 5 * dir[i][1] < 0 && x + 5 * dir[i][1] >= BOARDSIZE && y + 5 * dir[i][0] < 0 && y + 5 * dir[i][0] >= BOARDSIZE) {
+					continue;
+				}
+				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
+					threeWithGap.push_back({ x + 2 * dir[i][1] , y + 2 * dir[i][0] });
+				}
+				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
+					threeWithGap.push_back({ x + 1 * dir[i][1] , y + 1 * dir[i][0] });
+				}
+				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
+					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
+					threeWithGap.push_back({ x + 3 * dir[i][1] , y + 3 * dir[i][0] });
+				}
+			}
+		}
+	}
+	return threeWithGap;
 }

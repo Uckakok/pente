@@ -16,7 +16,14 @@
 
 #define BOARDSIZE	19
 
-typedef struct {
+struct coordinates {
 	int x;
 	int y;
-} coordinates;
+	coordinates(int x = 0, int y = 0)
+		: x(x), y(y)
+	{
+	}
+	bool operator==(const coordinates& left) const {
+		return (x == left.x && y == left.y);
+	}
+};

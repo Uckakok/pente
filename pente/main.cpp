@@ -6,10 +6,9 @@
 #include<string>
 #include<filesystem>
 #include"declarations.h"
-#include"penteBoard.h"
+#include<penteEngine.h>
 #include"settings.h"
 #include"graphicalMode.h"
-#include"botPlayer.h"
 #include<array>
 
 namespace fs = std::experimental::filesystem;
@@ -42,9 +41,6 @@ coordinates gameChoices(settings *currentSettings) {
 				return returnValue;
 			case '4':
 				returnValue.x = -4;
-				return returnValue;
-			case '5':
-				returnValue.x = -5;
 				return returnValue;
 			}
 		}
@@ -143,6 +139,7 @@ vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
 }
 
 void gameLoop(penteBoard *currentGame, settings *currentSettings) {
+	currentGame->AIInstance = generateAIInstance(currentSettings->AIDifficulty);
 	graphicalInterface *window = NULL;
 	if (!currentSettings->graphical) {
 		if (currentSettings->prefferedConsole == ASCIICONSOLE) {
@@ -165,14 +162,19 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 	vector<pieceToDraw> allPieces;
 	while (true) {
 		coordinates nextMove;
-		if (!currentSettings->graphical) {
-			nextMove = gameChoices(currentSettings);
+		if (currentGame->isAgainstAI && currentGame->isAIWhite == currentGame->isWhiteTurn) {
+			nextMove = currentGame->AIInstance->findBestMove(currentGame, currentGame->isWhiteTurn);
 		}
 		else {
-			allPieces = getAllPieces(currentGame);
-			window->newPiecesToDraw(allPieces);
-			window->windowUpdate();
-			nextMove = fetchPosition();
+			if (!currentSettings->graphical) {
+				nextMove = gameChoices(currentSettings);
+			}
+			else {
+				allPieces = getAllPieces(currentGame);
+				window->newPiecesToDraw(allPieces);
+				window->windowUpdate();
+				nextMove = fetchPosition();
+			}
 		}
 		if (!currentSettings->graphical) {
 			if (nextMove.x == -1) {
@@ -195,24 +197,6 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 			else if (nextMove.x == -4 && currentSettings->allowUndo) {
 				currentGame->unmakeMove();
-			}
-			else if (nextMove.x == -5) {/*
-				vector<chain> searchedMoves = botPlayer::analyzeForChains(currentGame, !currentGame->isWhiteTurn, 3);
-				vector<coordinates> blockingChains = botPlayer::blockingChains(currentGame, searchedMoves);
-				cout << "blocking chains:" << endl;
-				for (auto& block : blockingChains) {
-					cout << block.x << ", " << block.y << endl;
-				}
-				cout << "takings:" << endl;
-				vector<coordinates> takings = botPlayer::analyzeForTakings(currentGame);
-				for (auto& take : takings) {
-					cout << "x: " << take.x << ", y: " << take.y << endl;
-				}
-				cout << "two gap two:" << endl;
-				vector<coordinates> gaps = botPlayer::analyzeForTwoGapTwo(currentGame, !currentGame->isWhiteTurn);
-				for (auto& gap : gaps) {
-					cout << "x: " << gap.x << ", y: " << gap.y << endl;
-				}*/;
 			}
 			else {
 				currentGame->makeMove(nextMove.x, nextMove.y);
@@ -257,26 +241,6 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				currentGame->makeMove(nextMove.x, nextMove.y);
 				window->resetPosition();
 				currentGame->printBoardToConsoleUTF8(); 
-				//testowe
-				vector<chain> searchedMoves = botPlayer::analyzeForChains(currentGame, !currentGame->isWhiteTurn, 3);
-				array<vector<coordinates>, 4> blockingChains = botPlayer::blockingChains(currentGame, searchedMoves);
-				cout << "blocking chains:" << endl;
-				for (auto& priority : blockingChains) {
-					for (auto& block : priority) {
-						cout << block.x << ", " << block.y << endl;
-					}
-				}
-				cout << "takings:" << endl;
-				vector<coordinates> takings = botPlayer::analyzeForTakings(currentGame);
-				for (auto& take : takings) {
-					cout << "x: " << take.x << ", y: " << take.y << endl;
-				}
-				cout << "two gap two:" << endl;
-				vector<coordinates> gaps = botPlayer::analyzeForFourWithGap(currentGame, !currentGame->isWhiteTurn);
-				for (auto& gap : gaps) {
-					cout << "x: " << gap.x << ", y: " << gap.y << endl;
-				}
-				//testowe
 			}
 			if (currentGame->gameWon) {
 				allPieces = getAllPieces(currentGame);
@@ -299,6 +263,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 
 
 int main() {
+	srand((unsigned)time(NULL));
 	settings *currentSettings = new settings();
 	while (true) {
 		string saveName;
@@ -310,11 +275,24 @@ int main() {
 			currentGame->penteVariant = currentSettings->prefferedPenteVersion;
 			gameLoop(currentGame, currentSettings);
 			break;
-		case 2:
-			//dodac gracza AI
-			cout << "Poki co brak komputera z ktorym mozna zagrac..." << endl;
-			break;
-		case 3:
+		case 2: {
+			string playerColour;
+			cout << "Jako ktory gracz chcesz zagrac? (bialy/czarny)" << endl;
+			cin >> playerColour;
+			if (playerColour == "bialy") {
+				currentGame = new penteBoard();
+				currentGame->isAIWhite = false;
+				currentGame->isAgainstAI = true;
+				gameLoop(currentGame, currentSettings);
+			}
+			else if (playerColour == "czarny") {
+				currentGame = new penteBoard();
+				currentGame->isAIWhite = true;
+				currentGame->isAgainstAI = true;
+				gameLoop(currentGame, currentSettings);
+			}
+			break; }
+		case 3: {
 			listSavesInWorkingDirectory();
 			cout << endl << "Podaj nazwe pliku, ktory chcesz wczytac:" << endl;
 			cin >> saveName;
@@ -327,9 +305,35 @@ int main() {
 			else {
 				currentSettings->prefferedPenteVersion = currentGame->penteVariant;
 			}
-			cout << endl << "Aktualnie ruch gracza: " << (currentGame->isWhiteTurn ? "bialy" : "czarny") << endl;
-			gameLoop(currentGame, currentSettings);
-			break;
+			cout << "Chcesz zagrac w trybie hotseat, czy przeciwko AI? (hotseat/AI)" << endl;
+			string gameEnemy;
+			cin >> gameEnemy;
+			if (gameEnemy == "hotseat") {
+				cout << endl << "Aktualnie ruch gracza: " << (currentGame->isWhiteTurn ? "bialy" : "czarny") << endl;
+				gameLoop(currentGame, currentSettings);
+			}
+			else if (gameEnemy == "AI") {
+				string playerColour;
+				cout << "Jako ktory gracz chcesz zagrac? (bialy/czarny)" << endl;
+				cin >> playerColour;
+				if (playerColour == "bialy") {
+					currentGame->isAIWhite = false;
+					currentGame->isAgainstAI = true;
+					gameLoop(currentGame, currentSettings);
+				}
+				else if (playerColour == "czarny") {
+					currentGame->isAIWhite = true;
+					currentGame->isAgainstAI = true;
+					gameLoop(currentGame, currentSettings);
+				}
+				else {
+					cout << "Niepoprawne dane" << endl;
+				}
+			}
+			else {
+				cout << "Niepoprawne dane" << endl;
+			}
+			break; }
 		case 4:
 			currentSettings->changeSettings();
 			break;

@@ -51,7 +51,10 @@
     <ClCompile Include="source\vertexBuffer.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="source\botPlayer.cpp">
+    <ClCompile Include="source\analyzeBoard.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="source\penteEngine.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
@@ -938,7 +941,10 @@
     <ClInclude Include="source\vertexBufferLayout.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="source\botPlayer.h">
+    <ClInclude Include="source\analyzeBoard.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="source\penteEngine.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>

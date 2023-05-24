@@ -164,6 +164,8 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 		coordinates nextMove;
 		if (currentGame->isAgainstAI && currentGame->isAIWhite == currentGame->isWhiteTurn) {
 			nextMove = currentGame->AIInstance->findBestMove(currentGame, currentGame->isWhiteTurn);
+			currentGame->gameWon = false;
+			currentGame->winner = -1;
 		}
 		else {
 			if (!currentSettings->graphical) {

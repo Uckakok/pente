@@ -328,7 +328,17 @@ bool penteBoard::makeMove(int x, int y)
 
 void penteBoard::displayCredits()
 {
-	cout << "Gratulacje! " << endl << "Wygrywa  gracz: " << (isWhiteTurn ? "czarny!" : "bialy!") << endl << endl;
+	cout << "Gratulacje! " << endl << "Wygrywa  gracz: " << (isWhiteTurn ? "czarny!" : "bialy!") << endl;
+	cout << "poprzez: ";
+	if (penteVariant == KERYOPENTE && (takesForBlack >= 15 || takesForWhite >= 15)) {
+		cout << "zbicie 15 pionkow przeciwnika." << endl;
+	}
+	else if (penteVariant == REGULARPENTE && (takesForBlack >= 10 || takesForWhite >= 10)) {
+		cout << "zbicie 10 pionkow przeciwnika." << endl;
+	}
+	else {
+		cout << "ulozenie 5 kamykow w linii." << endl;
+	}
 }
 
 void penteBoard::unmakeMove()

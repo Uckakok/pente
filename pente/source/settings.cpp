@@ -283,16 +283,16 @@ void settings::changeSettings()
 		case 3:
 			cout << "ekspercki";
 			break;
-		case 4:
-			cout << "mistrzowski";
-			break;
 		default :
 			cout << "nierozpoznany";
 		}
 		cout << endl;
 		cout << "8 - zapisz ustawienia na dysku" << endl;
 		cout << "9 - powrot" << endl << endl << endl << endl << endl;
-		cout << "na niektorych urzadzeniach znaki UTF moga nie wyswietlac sie poprawnie, wiec wtedy trzeba wybrac opcje ASCII." << endl;
+		cout << "na niektorych urzadzeniach znaki UTF moga nie wyswietlac sie poprawnie, oraz tryb graficzny moze nie dzialac." << endl;
+		if (AIDifficulty == 3) {
+			cout << "UWAGA pozio ekspercki AI moze wymagac mocnego kopmputera!" << endl;
+		}
 		int choice;
 		if (!(cin >> choice)) {
 			system("cls");
@@ -332,7 +332,7 @@ void settings::changeSettings()
 			break;
 		case 7:
 			AIDifficulty++;
-			if (AIDifficulty > 4) AIDifficulty = -1;
+			if (AIDifficulty > 3) AIDifficulty = -1;
 			break;
 		case 8:
 			saveCurrentSettings();

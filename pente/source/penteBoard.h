@@ -18,12 +18,12 @@ using namespace std;
 
 class penteBoard {
 private:
-	int takesForWhite = 0;
-	int takesForBlack = 0;
 	vector<vector<coordinates>> moveHistory;
-	int winner = -1;
 	int minMoves = 0;
 public:
+	int takesForWhite = 0;
+	int takesForBlack = 0;
+	int winner = -1;
 	computerPlayer *AIInstance;
 	bool isAgainstAI = false;
 	bool isAIWhite = false;

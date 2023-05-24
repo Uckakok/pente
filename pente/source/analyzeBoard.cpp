@@ -196,7 +196,7 @@ vector<coordinates> analyzeBoard::analyzeForFourWithGap(penteBoard * boardToAnal
 			}
 			for (int i = 0; i < 4; ++i) {
 				bool chainPossible = true;
-				if (x + 5 * dir[i][1] < 0 && x + 5 * dir[i][1] >= BOARDSIZE && y + 5 * dir[i][0] < 0 && y + 5 * dir[i][0] >= BOARDSIZE) {
+				if (x + 5 * dir[i][1] < 0 || x + 5 * dir[i][1] >= BOARDSIZE || y + 5 * dir[i][0] < 0 || y + 5 * dir[i][0] >= BOARDSIZE) {
 					continue;
 				}
 				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
@@ -337,26 +337,23 @@ vector<coordinates> analyzeBoard::analyzeForThreeWithGap(penteBoard * boardToAna
 			}
 			for (int i = 0; i < 8; ++i) {
 				bool chainPossible = true;
-				if (x + 5 * dir[i][1] < 0 && x + 5 * dir[i][1] >= BOARDSIZE && y + 5 * dir[i][0] < 0 && y + 5 * dir[i][0] >= BOARDSIZE) {
+				if (x + 5 * dir[i][1] < 0 || x + 5 * dir[i][1] >= BOARDSIZE || y + 5 * dir[i][0] < 0 || y + 5 * dir[i][0] >= BOARDSIZE || 
+					x + -1 * dir[i][1] < 0 || x + -1 * dir[i][1] >= BOARDSIZE || y + -1 * dir[i][0] < 0 || y + -1 * dir[i][0] >= BOARDSIZE) {
 					continue;
 				}
 				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
 					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == EMPTY &&
 					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
-					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
+					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + -1 * dir[i][0]][x + -1 * dir[i][1]] == EMPTY){
 					threeWithGap.push_back({ x + 2 * dir[i][1] , y + 2 * dir[i][0] });
 				}
 				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == EMPTY &&
 					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
 					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
-					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
-					threeWithGap.push_back({ x + 1 * dir[i][1] , y + 1 * dir[i][0] });
-				}
-				if (boardToAnalyze->board[y + dir[i][0]][x + dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
-					boardToAnalyze->board[y + 2 * dir[i][0]][x + 2 * dir[i][1]] == (whitePlayer ? WHITE : BLACK) &&
-					boardToAnalyze->board[y + 3 * dir[i][0]][x + 3 * dir[i][1]] == EMPTY &&
-					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == (whitePlayer ? WHITE : BLACK)) {
-					threeWithGap.push_back({ x + 3 * dir[i][1] , y + 3 * dir[i][0] });
+					boardToAnalyze->board[y + 4 * dir[i][0]][x + 4 * dir[i][1]] == EMPTY &&
+					boardToAnalyze->board[y + -1 * dir[i][0]][x + -1 * dir[i][1]] == EMPTY) {
+					threeWithGap.push_back({ x + dir[i][1] , y + dir[i][0] });
 				}
 			}
 		}

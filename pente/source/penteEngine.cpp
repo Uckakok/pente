@@ -19,7 +19,6 @@ array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * curr
 	allMovesWithPriorities[1] = analyzeBoard::analyzeForFourWithGap(currentBoard, !whiteTurn);
 	vector<chain> enemyChains1 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 4);
 	vector<chain> enemyChains2 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 3);
-	enemyChains1.insert(end(enemyChains1), begin(enemyChains2), end(enemyChains2));
 	array<vector<coordinates>, 5> chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains1);
 	allMovesWithPriorities[1].insert(end(allMovesWithPriorities[1]), begin(chainsBlocksEnemy[0]), end(chainsBlocksEnemy[0]));
 
@@ -31,6 +30,7 @@ array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * curr
 
 	//zablokowanie trójki przeciwnika odblokowanej z obu stron i 2 przerwa 1, lub odwrotnie (priorytet 3)
 	vector<coordinates> twoGapOneEnemy = analyzeBoard::analyzeForThreeWithGap(currentBoard, !whiteTurn);
+	chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains2);
 	allMovesWithPriorities[3].insert(end(allMovesWithPriorities[3]), begin(chainsBlocksEnemy[1]), end(chainsBlocksEnemy[1]));
 	allMovesWithPriorities[3].insert(end(allMovesWithPriorities[3]), begin(twoGapOneEnemy), end(twoGapOneEnemy));
 
@@ -82,9 +82,26 @@ array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * curr
 
 coordinates computerPlayer::generateFirstMoves(penteBoard * currentBoard, bool whiteTurn)
 {
+	if (currentBoard->isPro) {
+		int boardMiddle = (int)((BOARDSIZE) / 2);
+		if (currentBoard->getMoveHistorySize() == 0) {
+			return { (int)((BOARDSIZE) / 2), (int)((BOARDSIZE) / 2) };
+		}
+		if (currentBoard->getMoveHistorySize() == 2) {
+			vector<coordinates> keryoMoves;
+			for (int x = boardMiddle - 3; x < boardMiddle + 3; ++x) {
+				for (int y = boardMiddle - 3; y < boardMiddle + 3; ++y) {
+					if (x < boardMiddle - 2 || x > boardMiddle + 2 || y < boardMiddle - 2 || y > boardMiddle + 2) {
+						keryoMoves.push_back({ x, y });
+					}
+				}
+			}
+			return keryoMoves[rand() % keryoMoves.size()];
+		}
+	}
 	int boardMiddle = (int)((BOARDSIZE) / 2);
 	vector<coordinates> possibleMoves;
-	if (currentBoard->getMoveHistorySize() == 0 || currentBoard->getMoveHistorySize()) {
+	if (currentBoard->getMoveHistorySize() <= 2) {
 		if (currentBoard->board[boardMiddle][boardMiddle] == EMPTY) {
 			return { boardMiddle, boardMiddle };
 		}
@@ -104,7 +121,7 @@ coordinates computerPlayer::generateFirstMoves(penteBoard * currentBoard, bool w
 
 int computerPlayer::evaluatePlayer(penteBoard *currentBoard, bool whiteTurn) {
 	int score = 0;
-	int scoreValues[] = { 100000, 50000, 3000,  2500, 2300, 800, 750, 700, 600, 300, 100, };
+	int scoreValues[] = { 100000, 50000, 5000,  5000, 600, 400, 400, 300, 200, 150, 50, 6000};
 	//sprawdzenie czy mozna wygrac jednym ruchem 
 	score += analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn).size() * scoreValues[0];
 	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
@@ -135,6 +152,9 @@ int computerPlayer::evaluatePlayer(penteBoard *currentBoard, bool whiteTurn) {
 	score += adjacent[4].size() * scoreValues[7];
 	score += adjacent[3].size() * scoreValues[8];
 	score += adjacent[2].size() * scoreValues[9];
+
+	//dodanie aktualnie wykonanych bic
+
 	return score;
 }
 
@@ -153,6 +173,8 @@ int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 	int score = 0;
 	score += evaluatePlayer(currentBoard, true);
 	score -= evaluatePlayer(currentBoard, false);
+	int takings = currentBoard->takesForWhite - currentBoard->takesForBlack;
+	score += takings * 8000;
 	return score;
 }
 
@@ -213,48 +235,7 @@ int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, int al
 
 vector<coordinates> computerPlayer::generateMovesWorthChecking(penteBoard * currentBoard, bool whiteTurn)
 {
-	//sprawdzenie czy mozna wygrac jednym ruchem (priorytet 0)
 	vector<coordinates> allMovesWithPriorities;
-	allMovesWithPriorities = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
-	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
-	vector<chain> chains2 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 3);
-	vector<chain> chains3 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 2);
-	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(chainsBlocks[0]), end(chainsBlocks[0]));
-
-
-	//sprawdzenie czy przeciwnik moze wygrac jednym ruchem (priorytet 1)
-	allMovesWithPriorities = analyzeBoard::analyzeForFourWithGap(currentBoard, !whiteTurn);
-	vector<chain> enemyChains1 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 4);
-	vector<chain> enemyChains2 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 3);
-	enemyChains1.insert(end(enemyChains1), begin(enemyChains2), end(enemyChains2));
-	array<vector<coordinates>, 5> chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains1);
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(chainsBlocksEnemy[0]), end(chainsBlocksEnemy[0]));
-
-	//sprawdzenie czy mo¿na u³o¿yæ czwórkê odblokowan¹ z dwóch stron lub 2 przerwa 1 i odwrotnie(priorytet 2)
-	vector<coordinates> twoGapOnePlayer = analyzeBoard::analyzeForThreeWithGap(currentBoard, whiteTurn);
-	chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains2);
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(chainsBlocks[1]), end(chainsBlocks[1]));
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(twoGapOnePlayer), end(twoGapOnePlayer));
-
-	//zablokowanie trójki przeciwnika odblokowanej z obu stron i 2 przerwa 1, lub odwrotnie (priorytet 3)
-	chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains2);
-	vector<coordinates> twoGapOneEnemy = analyzeBoard::analyzeForThreeWithGap(currentBoard, !whiteTurn);
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(chainsBlocksEnemy[1]), end(chainsBlocksEnemy[1]));
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(twoGapOneEnemy), end(twoGapOneEnemy));
-
-	//sprawdzenie czy mo¿na u³o¿yæ czwórkê zablokowan¹ z jednej strony (priorytet 4)
-	chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains3);
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(chainsBlocks[2]), end(chainsBlocks[2]));
-
-	//zbicie przeciwnika (priorytet 5)
-	vector<coordinates> takings = analyzeBoard::analyzeForTakings(currentBoard, whiteTurn);
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(takings), end(takings));
-
-	//zrobienie z odblokowanej dwójki trójki (priorytet 6)
-	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(chainsBlocks[3]), end(chainsBlocks[3]));
-
-	//uk³adanie bierek przy innych bierkach (priorytety 7-14)
 	array<vector<coordinates>, 8> adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, whiteTurn);
 	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[7]), end(adjacent[7]));
 	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[6]), end(adjacent[6]));
@@ -262,32 +243,24 @@ vector<coordinates> computerPlayer::generateMovesWorthChecking(penteBoard * curr
 	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[4]), end(adjacent[4]));
 	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[3]), end(adjacent[3]));
 	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[2]), end(adjacent[2]));
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[1]), end(adjacent[1])); 
+	adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, !whiteTurn);
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[7]), end(adjacent[7]));
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[6]), end(adjacent[6]));
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[5]), end(adjacent[5]));
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[4]), end(adjacent[4]));
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[3]), end(adjacent[3]));
+	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[2]), end(adjacent[2]));
 	allMovesWithPriorities.insert(end(allMovesWithPriorities), begin(adjacent[1]), end(adjacent[1]));
+
 	return allMovesWithPriorities;
 }
 
 
+
 coordinates computerPlayer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
-	coordinates testMove;
-	if (currentBoard->isPro) {
-		int boardMiddle = (int)((BOARDSIZE) / 2);
-		if (currentBoard->getMoveHistorySize() == 0) {
-			testMove = { (int)((BOARDSIZE) / 2), (int)((BOARDSIZE) / 2) };
-		}
-		if (currentBoard->getMoveHistorySize() == 2) {
-			vector<coordinates> keryoMoves;
-			for (int x = boardMiddle - 4; x < boardMiddle + 4; ++x) {
-				for (int y = boardMiddle - 4; y < boardMiddle + 4; ++y) {
-					if (x < boardMiddle - 2 || x > boardMiddle + 2 || y < boardMiddle - 2 || y > boardMiddle + 2) {
-						keryoMoves.push_back({ x, y });
-					}
-				}
-			}
-			return (keryoMoves[rand() % keryoMoves.size()]);
-		}
-	}
-	else if (currentBoard->getMoveHistorySize() <= 1) {
+	if (currentBoard->getMoveHistorySize() <= 2) {
 		return generateFirstMoves(currentBoard, whiteTurn);
 	}
 	return coordinates({rand() % BOARDSIZE, rand() % BOARDSIZE});
@@ -347,6 +320,9 @@ computerPlayer * generateAIInstance(int difficulty)
 
 coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
+	if (currentBoard->getMoveHistorySize() <= 2) {
+		return generateFirstMoves(currentBoard, whiteTurn);
+	}
 	vector<coordinates> winningMoves;
 	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
 	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
@@ -365,6 +341,12 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 		array<vector<coordinates>, 8> adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, whiteTurn);
 		if (adjacent[0].size() != 0) {
 			return (adjacent[0][rand() % adjacent[0].size()]);
+		}
+		adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, !whiteTurn);
+		for (int i = 0; i < 8; ++i) {
+			if (adjacent[i].size() != 0) {
+				return (adjacent[i][rand() % adjacent[i].size()]);
+			}
 		}
 		do {
 			moveToTest = { rand() % BOARDSIZE, rand() % BOARDSIZE };
@@ -411,6 +393,9 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 
 coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
+	if (currentBoard->getMoveHistorySize() <= 2) {
+		return generateFirstMoves(currentBoard, whiteTurn);
+	}
 	//wygraj jednym ruchem
 	vector<coordinates> winningMoves;
 	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
@@ -431,6 +416,12 @@ coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool white
 		array<vector<coordinates>, 8> adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, whiteTurn);
 		if (adjacent[0].size() != 0) {
 			return (adjacent[0][rand() % adjacent[0].size()]);
+		}
+		adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, !whiteTurn);
+		for (int i = 0; i < 8; ++i) {
+			if (adjacent[i].size() != 0) {
+				return (adjacent[i][rand() % adjacent[i].size()]);
+			}
 		}
 		do {
 			moveToTest = { rand() % BOARDSIZE, rand() % BOARDSIZE };
@@ -464,6 +455,9 @@ coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool white
 
 coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
+	if (currentBoard->getMoveHistorySize() <= 2) {
+		return generateFirstMoves(currentBoard, whiteTurn);
+	}
 	vector<coordinates> winningMoves;
 	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
 	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
@@ -483,11 +477,20 @@ coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 		if (adjacent[0].size() != 0) {
 			return (adjacent[0][rand() % adjacent[0].size()]);
 		}
+		adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, !whiteTurn);
+		for (int i = 0; i < 8; ++i) {
+			if (adjacent[i].size() != 0) {
+				return (adjacent[i][rand() % adjacent[i].size()]);
+			}
+		}
 		do {
 			moveToTest = { rand() % BOARDSIZE, rand() % BOARDSIZE };
 		} while (currentBoard->board[moveToTest.y][moveToTest.x] != EMPTY);
 		return moveToTest;
 	}
+	
+
+
 	coordinates bestMove = moves[0];
 	int bestMoveScore = (whiteTurn ? MININT : MAXINT);
 

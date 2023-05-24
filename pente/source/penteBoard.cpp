@@ -94,7 +94,7 @@ void penteBoard::savePenteBoard(bool autosave)
 		cout << "Nie udalo sie zapisac pliku gry." << endl;
 		system("pause");
 	}
-	ofs << isPro << " " << penteVariant << " " << takesForWhite << " " << takesForBlack << " " << isWhiteTurn << moveHistory.size() << endl;;
+	ofs << isPro << " " << penteVariant << " " << takesForWhite << " " << takesForBlack << " " << isWhiteTurn << " " << moveHistory.size() << endl;;
 	for (int i = 0; i < BOARDSIZE; ++i) {
 		for (int j = 0; j < BOARDSIZE; ++j) {
 			ofs << board[i][j] << " ";
@@ -102,90 +102,6 @@ void penteBoard::savePenteBoard(bool autosave)
 		ofs << endl;
 	}
 	ofs.close();
-}
-
-void penteBoard::printBoardToConsoleASCII()
-{
-	printf("%s", WHITECOLOUR);
-	printf("  ");
-	for (int i = 'a'; i < 't'; ++i) {
-		printf("%c", i);
-	}
-	cout << endl;
-	for (int i = 0; i < BOARDSIZE; ++i) {
-		printf("%s", WHITECOLOUR);
-		printf("%2d", BOARDSIZE - i);
-		for (int j = 0; j < BOARDSIZE; ++j) {
-			switch (board[i][j]) {
-			case EMPTY:
-				printf(" ");
-				break;
-			case WHITE:
-				printf("%s", WHITECOLOUR);
-				printf("o");
-				break;
-			case BLACK:
-				printf("%s", REDCOLOUR);
-				printf("o");
-				break;
-			default:
-				system("cls");
-				cout << "Niepoprawny kod znaku: " << board[i][j] << " znajduje sie na planszy." << endl;
-			}
-		}
-		printf("%s", WHITECOLOUR);
-		printf("%2d", BOARDSIZE - i);
-		cout << endl;
-	}
-	printf("%s", WHITECOLOUR);
-	printf("  ");
-	for (int i = 'a'; i < 't'; ++i) {
-		printf("%c", i);
-	}
-	cout << endl;
-}
-
-void penteBoard::printBoardToConsoleUTF8()
-{
-	//Zmiana kodowania konsoli na UTF-8 by wyœwietliæ specjalny znak wybrany jako pionek
-	SetConsoleOutputCP(CP_UTF8);
-	printf("%s", WHITECOLOUR);
-	printf("  ");
-	for (int i = 'a'; i < 't'; ++i) {
-		printf("%c", i);
-	}
-	cout << endl;
-	for (int i = 0; i < BOARDSIZE; ++i) {
-		printf("%s", WHITECOLOUR);
-		printf("%2d", BOARDSIZE - i);
-		for (int j = 0; j < BOARDSIZE; ++j) {
-			switch (board[i][j]) {
-			case EMPTY:
-				printf(" ");
-				break;
-			case WHITE:
-				printf("%s", WHITECOLOUR);
-				cout << u8"•";
-				break;
-			case BLACK:
-				printf("%s", REDCOLOUR);
-				cout << u8"•";
-				break;
-			default:
-				system("cls");
-				cout << "Niepoprawny kod znaku: " << board[i][j] << " znajduje sie na planszy." << endl;
-			}
-		}
-		printf("%s", WHITECOLOUR);
-		printf("%2d", BOARDSIZE - i);
-		cout << endl;
-	}
-	printf("%s", WHITECOLOUR);
-	printf("  ");
-	for (int i = 'a'; i < 't'; ++i) {
-		printf("%c", i);
-	}
-	cout << endl;
 }
 
 bool penteBoard::checkIfMoveLegal(int x, int y)
@@ -200,7 +116,7 @@ bool penteBoard::checkIfMoveLegal(int x, int y)
 }
 
 int penteBoard::getMoveHistorySize() {
-	return moveHistory.size();
+	return max(moveHistory.size(), minMoves);
 }
 
 bool penteBoard::checkIfMoveLegalProPente(int x, int y)
@@ -377,3 +293,85 @@ void penteBoard::unmakeMove()
 	isWhiteTurn = !isWhiteTurn;
 }
 
+void UTF8Pente::printBoardToConsole()
+{
+	SetConsoleOutputCP(CP_UTF8);
+	printf("%s", WHITECOLOUR);
+	printf("  ");
+	for (int i = 'a'; i < 't'; ++i) {
+		printf("%c", i);
+	}
+	cout << endl;
+	for (int i = 0; i < BOARDSIZE; ++i) {
+		printf("%s", WHITECOLOUR);
+		printf("%2d", BOARDSIZE - i);
+		for (int j = 0; j < BOARDSIZE; ++j) {
+			switch (board[i][j]) {
+			case EMPTY:
+				printf(" ");
+				break;
+			case WHITE:
+				printf("%s", WHITECOLOUR);
+				cout << u8"•";
+				break;
+			case BLACK:
+				printf("%s", REDCOLOUR);
+				cout << u8"•";
+				break;
+			default:
+				system("cls");
+				cout << "Niepoprawny kod znaku: " << board[i][j] << " znajduje sie na planszy." << endl;
+			}
+		}
+		printf("%s", WHITECOLOUR);
+		printf("%2d", BOARDSIZE - i);
+		cout << endl;
+	}
+	printf("%s", WHITECOLOUR);
+	printf("  ");
+	for (int i = 'a'; i < 't'; ++i) {
+		printf("%c", i);
+	}
+	cout << endl;
+}
+
+void ASCIIPente::printBoardToConsole()
+{
+	printf("%s", WHITECOLOUR);
+	printf("  ");
+	for (int i = 'a'; i < 't'; ++i) {
+		printf("%c", i);
+	}
+	cout << endl;
+	for (int i = 0; i < BOARDSIZE; ++i) {
+		printf("%s", WHITECOLOUR);
+		printf("%2d", BOARDSIZE - i);
+		for (int j = 0; j < BOARDSIZE; ++j) {
+			switch (board[i][j]) {
+			case EMPTY:
+				printf(" ");
+				break;
+			case WHITE:
+				printf("%s", WHITECOLOUR);
+				printf("o");
+				break;
+			case BLACK:
+				printf("%s", REDCOLOUR);
+				printf("o");
+				break;
+			default:
+				system("cls");
+				cout << "Niepoprawny kod znaku: " << board[i][j] << " znajduje sie na planszy." << endl;
+			}
+		}
+		printf("%s", WHITECOLOUR);
+		printf("%2d", BOARDSIZE - i);
+		cout << endl;
+	}
+	printf("%s", WHITECOLOUR);
+	printf("  ");
+	for (int i = 'a'; i < 't'; ++i) {
+		printf("%c", i);
+	}
+	cout << endl;
+}

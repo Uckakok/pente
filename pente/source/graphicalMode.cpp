@@ -59,8 +59,8 @@ void graphicalInterface::prepareVertexArray()
 
 void graphicalInterface::prepareVertexBuffer() {
 	vb = new vertexBuffer(squareVertex, 4 * 4 * sizeof(float));
-	layout.push<float>(2);
-	layout.push<float>(2);
+	layout.push(2);
+	layout.push(2);
 	va = new vertexArray();
 	va->addBuffer(*vb, layout);
 	ib = new indexBuffer(squareIndices, 6);

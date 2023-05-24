@@ -1,7 +1,7 @@
-penteVersion: regularPente
-console: ASCII
+penteVersion: keryoPente
+console: UTF8
 autosave: true
-pro: false
+pro: true
 graphical: true
-undo: false
-AI: 4
+undo: true
+AI: 3

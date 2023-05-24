@@ -142,12 +142,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 	currentGame->AIInstance = generateAIInstance(currentSettings->AIDifficulty);
 	graphicalInterface *window = NULL;
 	if (!currentSettings->graphical) {
-		if (currentSettings->prefferedConsole == ASCIICONSOLE) {
-			currentGame->printBoardToConsoleASCII();
-		}
-		else if (currentSettings->prefferedConsole == UTF8CONSOLE) {
-			currentGame->printBoardToConsoleUTF8();
-		}
+		currentGame->printBoardToConsole();
 	}
 	else {
 		window = new graphicalInterface();
@@ -163,6 +158,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 	while (true) {
 		coordinates nextMove;
 		if (currentGame->isAgainstAI && currentGame->isAIWhite == currentGame->isWhiteTurn) {
+			currentGame->printBoardToConsole();
 			nextMove = currentGame->AIInstance->findBestMove(currentGame, currentGame->isWhiteTurn);
 			currentGame->gameWon = false;
 			currentGame->winner = -1;
@@ -179,36 +175,34 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 		}
 		if (!currentSettings->graphical) {
-			if (nextMove.x == -1) {
+			switch (nextMove.x) {
+			case -1:
 				currentGame->savePenteBoard();
-			}
-			else if (nextMove.x == -2) {
+				break;
+			case -2:
 				if (currentSettings->autosaveOnExit) {
 					currentGame->savePenteBoard(true);
 				}
 				delete currentGame;
-				break;
-			}
-			else if (nextMove.x == -3) {
+				return;
+			case -3:
 				if (currentSettings->autosaveOnExit) {
 					currentGame->savePenteBoard(true);
 				}
 				delete currentGame;
 				delete currentSettings;
 				exit(EXIT_SUCCESS);
-			}
-			else if (nextMove.x == -4 && currentSettings->allowUndo) {
-				currentGame->unmakeMove();
-			}
-			else {
+			case -4:
+				if (currentSettings->allowUndo) {
+					currentGame->unmakeMove();
+				}
+				break;
+			default:
 				currentGame->makeMove(nextMove.x, nextMove.y);
 			}
-			if (currentSettings->prefferedConsole == ASCIICONSOLE) {
-				currentGame->printBoardToConsoleASCII();
-			}
-			else if (currentSettings->prefferedConsole == UTF8CONSOLE) {
-				currentGame->printBoardToConsoleUTF8();
-			}
+			currentGame->printBoardToConsole();
+			cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
+			cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
 			if (currentGame->gameWon) {
 				currentGame->displayCredits();
 				system("pause");
@@ -217,10 +211,10 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 		}
 		else {
-			if (nextMove.x == -1) {
-				;
-			}
-			else if (nextMove.x == -2) {
+			switch (nextMove.x) {
+			case -1:
+				break;
+			case -2: {
 				window->resetPosition();
 				window->closeWindow();
 				string saveChoice;
@@ -237,12 +231,13 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				}
 				delete currentGame;
 				delete window;
-				break;
-			}
-			else {
+				return; }
+			default:
 				currentGame->makeMove(nextMove.x, nextMove.y);
 				window->resetPosition();
-				currentGame->printBoardToConsoleUTF8(); 
+				currentGame->printBoardToConsole();
+				cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
+				cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
 			}
 			if (currentGame->gameWon) {
 				allPieces = getAllPieces(currentGame);
@@ -262,7 +257,21 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 	}
 }
 
+penteBoard* createBoard(settings *currentSettings) {
+	penteBoard *currentGame;
+	if (currentSettings->prefferedConsole == ASCIICONSOLE) {
+		currentGame = new ASCIIPente();
+	}
+	else {
+		currentGame = new UTF8Pente();
+	}
+	return currentGame;
+}
 
+void initalizeBoard(settings *currentSettings, penteBoard* currentBoard) {
+	currentBoard->isPro = currentSettings->isPro;
+	currentBoard->penteVariant = currentSettings->prefferedPenteVersion;
+}
 
 int main() {
 	srand((unsigned)time(NULL));
@@ -273,8 +282,8 @@ int main() {
 		int whatToDo = mainMenu();
 		switch (whatToDo) {
 		case 1:
-			currentGame = new penteBoard();
-			currentGame->penteVariant = currentSettings->prefferedPenteVersion;
+			currentGame = createBoard(currentSettings);
+			initalizeBoard(currentSettings, currentGame);
 			gameLoop(currentGame, currentSettings);
 			break;
 		case 2: {
@@ -282,13 +291,15 @@ int main() {
 			cout << "Jako ktory gracz chcesz zagrac? (bialy/czarny)" << endl;
 			cin >> playerColour;
 			if (playerColour == "bialy") {
-				currentGame = new penteBoard();
+				currentGame = createBoard(currentSettings);
+				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = false;
 				currentGame->isAgainstAI = true;
 				gameLoop(currentGame, currentSettings);
 			}
 			else if (playerColour == "czarny") {
-				currentGame = new penteBoard();
+				currentGame = createBoard(currentSettings);
+				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = true;
 				currentGame->isAgainstAI = true;
 				gameLoop(currentGame, currentSettings);
@@ -298,7 +309,12 @@ int main() {
 			listSavesInWorkingDirectory();
 			cout << endl << "Podaj nazwe pliku, ktory chcesz wczytac:" << endl;
 			cin >> saveName;
-			currentGame = new penteBoard(saveName);
+			if (currentSettings->prefferedConsole == ASCIICONSOLE) {
+				currentGame = new ASCIIPente(saveName);
+			}
+			else {
+				currentGame = new UTF8Pente(saveName);
+			}
 			if (currentGame->penteVariant == -1) {
 				cout << "Nie mozna bylo wczytac gry: " << saveName << endl;
 				system("pause");
@@ -349,6 +365,4 @@ int main() {
 			break;
 		}
 	}
-	
-
 }

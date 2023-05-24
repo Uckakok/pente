@@ -35,18 +35,27 @@ public:
 
 	penteBoard();
 	//wczytywanie zaklada, ¿e plik zawsze jest poprawny
-	penteBoard(string pathToLoad);
+	explicit penteBoard(string pathToLoad);
 	penteBoard(int variant, bool pro);
 	penteBoard(const penteBoard& original);
 	void savePenteBoard(bool autosave = false);
-	void printBoardToConsoleASCII();
-	void printBoardToConsoleUTF8();
 	bool checkIfMoveLegal(int x, int y);
 	int getMoveHistorySize();
 	bool checkIfMoveLegalProPente(int x, int y);
 	bool makeMove(int x, int y);
 	void displayCredits();
 	void unmakeMove();
+	virtual void printBoardToConsole() { ; };
+};
 
-	
+class UTF8Pente : public penteBoard {
+public:
+	void printBoardToConsole() override;
+	using penteBoard::penteBoard;
+};
+
+class ASCIIPente : public penteBoard {
+public:
+	void printBoardToConsole() override;
+	using penteBoard::penteBoard;
 };

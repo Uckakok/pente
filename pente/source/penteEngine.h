@@ -21,9 +21,8 @@ public:
 	coordinates generateFirstMoves(penteBoard *currentBoard, bool whiteTurn);
 	int evaluatePlayer(penteBoard * currentBoard, bool whiteTurn);
 	int staticPositionEvaluation(penteBoard *currentBoard);
-	int minMaxAlgorithm(penteBoard *currentBoard, int depth, bool whiteTurn);
+	int minMaxAlgorithm(penteBoard *currentBoard, int depth, int alpha, int beta, bool whiteTurn);
 	vector<coordinates> generateMovesWorthChecking(penteBoard *currentBoard, bool whiteTurn);
-	int minMaxWraper(penteBoard currentBoard, int depth, bool whiteTurn);
 };
 
 class advancedComputer : public computerPlayer{
@@ -42,6 +41,20 @@ public:
 };
 
 class mediumComputer : public computerPlayer {
+private:
+public:
+	coordinates findBestMove(penteBoard *currentBoard, bool whiteTurn) override;
+
+};
+
+class masterComputer : public computerPlayer {
+private:
+public:
+	coordinates findBestMove(penteBoard *currentBoard, bool whiteTurn) override;
+
+};
+
+class easyComputer : public computerPlayer {
 private:
 public:
 	coordinates findBestMove(penteBoard *currentBoard, bool whiteTurn) override;

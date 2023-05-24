@@ -158,7 +158,7 @@ int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 
 
 
-int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, bool whiteTurn)
+int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, int alpha, int beta, bool whiteTurn)
 {
 	if (depth <= 0 || currentBoard->gameWon) {
 		analyzedPositions++;
@@ -175,13 +175,17 @@ int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, bool w
 			int takesForWhite = currentBoard->takesForWhite;
 			int takesForBlack = currentBoard->takesForBlack;
 			currentBoard->makeMove(move.x, move.y);
-			int evaluation = minMaxAlgorithm(currentBoard, depth - 1, false);
+			int evaluation = minMaxAlgorithm(currentBoard, depth - 1, alpha, beta, false);
 			maxEvaluation = max(maxEvaluation, evaluation);
 			currentBoard->unmakeMove();
 			currentBoard->winner = -1;
 			currentBoard->gameWon = false;
 			currentBoard->takesForWhite = takesForWhite;
 			currentBoard->takesForBlack = takesForBlack;
+			if (maxEvaluation > beta) {
+				break;
+			}
+			alpha = max(alpha, evaluation);
 		}
 		return maxEvaluation;
 	}
@@ -191,13 +195,17 @@ int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, bool w
 			int takesForWhite = currentBoard->takesForWhite;
 			int takesForBlack = currentBoard->takesForBlack;
 			currentBoard->makeMove(move.x, move.y);
-			int evaluation = minMaxAlgorithm(currentBoard, depth - 1, true);
+			int evaluation = minMaxAlgorithm(currentBoard, depth - 1, alpha, beta, true);
 			minEvaluation = min(minEvaluation, evaluation);
 			currentBoard->unmakeMove();
 			currentBoard->winner = -1;
 			currentBoard->gameWon = false;
 			currentBoard->takesForWhite = takesForWhite;
 			currentBoard->takesForBlack = takesForBlack;
+			if (minEvaluation < alpha) {
+				break;
+			}
+			beta = min(beta, minEvaluation);
 		}
 		return minEvaluation;
 	}
@@ -314,11 +322,10 @@ computerPlayer * generateAIInstance(int difficulty)
 		instance = new computerPlayer();
 		break;
 	case 0:
-		instance = new mediumComputer();
+		instance = new easyComputer();
 		break;
 	case 1:
-		cout << "Nie istnieje jeszcze srednie AI" << endl;
-		instance = new advancedComputer();
+		instance = new mediumComputer();
 		break;
 	case 2:
 		instance = new advancedComputer();
@@ -326,8 +333,12 @@ computerPlayer * generateAIInstance(int difficulty)
 	case 3:
 		instance = new expertComputer();
 		break;
+	case 4:
+		instance = new masterComputer();
+		break;
 	default:
 		cout << "Nierozpoznany poziom trudnosci AI" << endl;
+		cout << "Inicjowanie AI o zaawansowanym poziomie trudnoœci" << endl;
 		instance = new advancedComputer();
 		break;
 	}
@@ -374,7 +385,7 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 		penteBoard* boardCopy = new penteBoard(*currentBoard);
 		boardCopy->makeMove(moves[i].x, moves[i].y);
 			
-		int score = minMaxAlgorithm(boardCopy, 3, !whiteTurn);
+		int score = minMaxAlgorithm(boardCopy, 3, MININT, MAXINT, !whiteTurn);
 
 
 		lock_guard<std::mutex> lock(mutex);
@@ -382,24 +393,6 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 
 		delete boardCopy;
 		});
-/*
-		int takesForWhite = currentBoard->takesForWhite;
-		int takesForBlack = currentBoard->takesForBlack;
-		currentBoard->makeMove(moves[i].x, moves[i].y);
-		int currentScore = minMaxAlgorithm(currentBoard, 3, !whiteTurn);
-		if (whiteTurn && currentScore > bestMoveScore) {
-			bestMove = moves[i];
-			bestMoveScore = currentScore;
-		}
-		else if (!whiteTurn && currentScore < bestMoveScore) {
-			bestMove = moves[i];
-			bestMoveScore = currentScore;
-		}
-		currentBoard->unmakeMove();
-		currentBoard->winner = -1;
-		currentBoard->gameWon = false;
-		currentBoard->takesForWhite = takesForWhite;
-		currentBoard->takesForBlack = takesForBlack;*/
 	}
 	for (auto& thread : threads) {
 		thread.join();
@@ -450,7 +443,7 @@ coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool white
 		int takesForWhite = currentBoard->takesForWhite;
 		int takesForBlack = currentBoard->takesForBlack;
 		currentBoard->makeMove(moves[i].x, moves[i].y);
-		int currentScore = minMaxAlgorithm(currentBoard, 1, !whiteTurn);
+		int currentScore = minMaxAlgorithm(currentBoard, 1, MININT, MAXINT, !whiteTurn);
 		if (whiteTurn && currentScore > bestMoveScore) {
 			bestMove = moves[i];
 			bestMoveScore = currentScore;
@@ -467,4 +460,91 @@ coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool white
 	}
 	cout << "przeanalizowanych pozycji: " << analyzedPositions << endl;
 	return bestMove;
+}
+
+coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
+{
+	vector<coordinates> winningMoves;
+	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
+	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
+	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
+	winningMoves.insert(end(winningMoves), begin(chainsBlocks[0]), end(chainsBlocks[0]));
+	if (winningMoves.size() != 0) {
+		return (winningMoves[rand() % winningMoves.size()]);
+	}
+	analyzedPositions = 0;
+	vector<coordinates> moves = generateMovesWorthChecking(currentBoard, whiteTurn);
+	if (moves.size() == 0) {
+		if (currentBoard->getMoveHistorySize() <= 1) {
+			return generateFirstMoves(currentBoard, whiteTurn);
+		}
+		coordinates moveToTest;
+		array<vector<coordinates>, 8> adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, whiteTurn);
+		if (adjacent[0].size() != 0) {
+			return (adjacent[0][rand() % adjacent[0].size()]);
+		}
+		do {
+			moveToTest = { rand() % BOARDSIZE, rand() % BOARDSIZE };
+		} while (currentBoard->board[moveToTest.y][moveToTest.x] != EMPTY);
+		return moveToTest;
+	}
+	coordinates bestMove = moves[0];
+	int bestMoveScore = (whiteTurn ? MININT : MAXINT);
+
+	vector<thread> threads;
+	mutex mutex;
+	vector<int> scores(moves.size());
+
+	for (int i = 0; i < moves.size(); ++i) {
+		threads.emplace_back([&, i]() {
+
+
+			penteBoard* boardCopy = new penteBoard(*currentBoard);
+			boardCopy->makeMove(moves[i].x, moves[i].y);
+
+			int score = minMaxAlgorithm(boardCopy, 5, MININT, MAXINT, !whiteTurn);
+
+
+			lock_guard<std::mutex> lock(mutex);
+			scores[i] = score;
+
+			delete boardCopy;
+		});
+	}
+	for (auto& thread : threads) {
+		thread.join();
+	}
+
+	for (int i = 0; i < moves.size(); ++i) {
+		if ((whiteTurn && scores[i] > bestMoveScore) || (!whiteTurn && scores[i] < bestMoveScore)) {
+			bestMove = moves[i];
+			bestMoveScore = scores[i];
+		}
+	}
+
+	cout << "przeanalizowanych pozycji: " << analyzedPositions.load() << endl;
+	return bestMove;
+}
+
+coordinates easyComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
+{
+	//szanse przedstawione jako 1 na ile przypadkow przegapi dana kategorie ruchow
+	int chancesToOverlook[] = { 20, 10, 8, 6, 4, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2};
+	array<vector<coordinates>, 16> moves = getAllGoodMoves(currentBoard, whiteTurn);
+	for (int i = 0; i < 16; ++i) {
+		if (moves[i].size() == 0) continue;
+		else if (rand() % chancesToOverlook[i] != 0){
+			return moves[i][rand() % moves[i].size()];
+		}
+	}
+
+	//jeœli nie znaleziono ¿adnego ruchu, musimy wygenerowaæ losowy.
+	if (currentBoard->getMoveHistorySize() <= 1) {
+		return generateFirstMoves(currentBoard, whiteTurn);
+	}
+	coordinates moveToTest;
+	do {
+		moveToTest = { rand() % BOARDSIZE, rand() % BOARDSIZE };
+	} while (currentBoard->board[moveToTest.y][moveToTest.x] != EMPTY);
+	return moveToTest;
 }

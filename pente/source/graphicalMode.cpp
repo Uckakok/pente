@@ -143,6 +143,7 @@ void graphicalInterface::windowUpdate()
 
 void graphicalInterface::closeWindow()
 {
+	communication = { -1, -1 };
 	glfwTerminate();
 }
 

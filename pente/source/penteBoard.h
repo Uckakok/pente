@@ -37,6 +37,7 @@ public:
 	//wczytywanie zaklada, ¿e plik zawsze jest poprawny
 	penteBoard(string pathToLoad);
 	penteBoard(int variant, bool pro);
+	penteBoard(const penteBoard& original);
 	void savePenteBoard(bool autosave = false);
 	void printBoardToConsoleASCII();
 	void printBoardToConsoleUTF8();

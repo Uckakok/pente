@@ -1,6 +1,6 @@
 #include "penteEngine.h"
 
-int analyzedPositions;
+atomic<int> analyzedPositions(0);
 
 array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * currentBoard, bool whiteTurn)
 {
@@ -155,6 +155,7 @@ int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 	score -= evaluatePlayer(currentBoard, false);
 	return score;
 }
+
 
 
 int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, bool whiteTurn)
@@ -335,7 +336,6 @@ computerPlayer * generateAIInstance(int difficulty)
 
 coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
-	//wygraj jednym ruchem
 	vector<coordinates> winningMoves;
 	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
 	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
@@ -351,7 +351,6 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 			return generateFirstMoves(currentBoard, whiteTurn);
 		}
 		coordinates moveToTest;
-		//sprobuj ulozyc pionek obok innego pionka
 		array<vector<coordinates>, 8> adjacent = analyzeBoard::findFieldsAdjacentToPieces(currentBoard, whiteTurn);
 		if (adjacent[0].size() != 0) {
 			return (adjacent[0][rand() % adjacent[0].size()]);
@@ -363,7 +362,27 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 	}
 	coordinates bestMove = moves[0];
 	int bestMoveScore = (whiteTurn ? MININT : MAXINT);
+
+	vector<thread> threads;
+	mutex mutex;
+	vector<int> scores(moves.size());
+
 	for (int i = 0; i < moves.size(); ++i) {
+		threads.emplace_back([&, i]() { 
+		
+			
+		penteBoard* boardCopy = new penteBoard(*currentBoard);
+		boardCopy->makeMove(moves[i].x, moves[i].y);
+			
+		int score = minMaxAlgorithm(boardCopy, 3, !whiteTurn);
+
+
+		lock_guard<std::mutex> lock(mutex);
+		scores[i] = score;
+
+		delete boardCopy;
+		});
+/*
 		int takesForWhite = currentBoard->takesForWhite;
 		int takesForBlack = currentBoard->takesForBlack;
 		currentBoard->makeMove(moves[i].x, moves[i].y);
@@ -380,9 +399,20 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 		currentBoard->winner = -1;
 		currentBoard->gameWon = false;
 		currentBoard->takesForWhite = takesForWhite;
-		currentBoard->takesForBlack = takesForBlack;
+		currentBoard->takesForBlack = takesForBlack;*/
 	}
-	cout << "przeanalizowanych pozycji: " << analyzedPositions << endl;
+	for (auto& thread : threads) {
+		thread.join();
+	}
+
+	for (int i = 0; i < moves.size(); ++i) {
+		if ((whiteTurn && scores[i] > bestMoveScore) || (!whiteTurn && scores[i] < bestMoveScore)) {
+			bestMove = moves[i];
+			bestMoveScore = scores[i];
+		}
+	}
+
+	cout << "przeanalizowanych pozycji: " << analyzedPositions.load() << endl;
 	return bestMove;
 }
 

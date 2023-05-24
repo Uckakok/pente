@@ -5,6 +5,9 @@
 #include<vector>
 #include"analyzeBoard.h"
 #include"penteBoard.h"
+#include<mutex>
+#include<thread>
+#include<atomic>
 
 
 
@@ -20,6 +23,7 @@ public:
 	int staticPositionEvaluation(penteBoard *currentBoard);
 	int minMaxAlgorithm(penteBoard *currentBoard, int depth, bool whiteTurn);
 	vector<coordinates> generateMovesWorthChecking(penteBoard *currentBoard, bool whiteTurn);
+	int minMaxWraper(penteBoard currentBoard, int depth, bool whiteTurn);
 };
 
 class advancedComputer : public computerPlayer{

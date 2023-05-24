@@ -28,6 +28,27 @@ penteBoard::penteBoard(int variant, bool pro)
 	}
 }
 
+penteBoard::penteBoard(const penteBoard& original)
+{
+	isPro = original.isPro;
+	penteVariant = original.penteVariant;
+	moveHistory = original.moveHistory;
+	minMoves = original.minMoves;
+	takesForWhite = original.takesForWhite;
+	takesForBlack = original.takesForBlack;
+	winner = original.winner;
+	AIInstance = original.AIInstance;
+	isAgainstAI = original.isAgainstAI;
+	isAIWhite = original.isAIWhite;
+	isWhiteTurn = original.isWhiteTurn;
+	gameWon = original.gameWon;
+	for (int i = 0; i < BOARDSIZE; ++i) {
+		for (int j = 0; j < BOARDSIZE; ++j) {
+			board[i][j] = original.board[i][j];
+		}
+	}
+}
+
 penteBoard::penteBoard(string pathToLoad)
 {
 	if (pathToLoad.length() <= 4 || pathToLoad.substr(pathToLoad.length() - 4, pathToLoad.length()) != ".pnt") {

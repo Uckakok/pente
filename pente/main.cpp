@@ -9,7 +9,7 @@
 #include<penteEngine.h>
 #include"settings.h"
 #include"graphicalMode.h"
-#include<array>
+#include<array> 
 
 namespace fs = std::experimental::filesystem;
 using namespace std;
@@ -136,6 +136,12 @@ vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
 		}
 	}
 	return allPieces;
+}
+
+void autoWindowUpdate(graphicalInterface *window) {
+	while (!closeUpdatingWhileAIThinks) {
+		window->windowUpdate();
+	}
 }
 
 void gameLoop(penteBoard *currentGame, settings *currentSettings) {

@@ -256,6 +256,39 @@ vector<coordinates> computerPlayer::generateMovesWorthChecking(penteBoard * curr
 	return allMovesWithPriorities;
 }
 
+vector<coordinates> computerPlayer::forceAIToBlockInstantWin(penteBoard * currentBoard, bool whiteTurn)
+{
+	//sprawdzenie czy mozna wygrac jednym ruchem (priorytet 0)
+	vector<coordinates> winningMoves;
+	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
+	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
+	vector<chain> chains2 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 3);
+	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
+	winningMoves.insert(end(winningMoves), begin(chainsBlocks[0]), end(chainsBlocks[0]));
+
+
+	//sprawdzenie czy przeciwnik moze wygrac jednym ruchem (priorytet 1)
+	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, !whiteTurn);
+	vector<chain> enemyChains1 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 4);
+	vector<chain> enemyChains2 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 3);
+	array<vector<coordinates>, 5> chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains1);
+	winningMoves.insert(end(winningMoves), begin(chainsBlocksEnemy[0]), end(chainsBlocksEnemy[0]));
+
+	//sprawdzenie czy mo¿na u³o¿yæ czwórkê odblokowan¹ z dwóch stron lub 2 przerwa 1 i odwrotnie(priorytet 2)
+	vector<coordinates> twoGapOnePlayer = analyzeBoard::analyzeForThreeWithGap(currentBoard, whiteTurn);
+	chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains2);
+	winningMoves.insert(end(winningMoves), begin(chainsBlocks[1]), end(chainsBlocks[1]));
+	winningMoves.insert(end(winningMoves), begin(twoGapOnePlayer), end(twoGapOnePlayer));
+
+	//zablokowanie trójki przeciwnika odblokowanej z obu stron i 2 przerwa 1, lub odwrotnie (priorytet 3)
+	vector<coordinates> twoGapOneEnemy = analyzeBoard::analyzeForThreeWithGap(currentBoard, !whiteTurn);
+	chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains2);
+	winningMoves.insert(end(winningMoves), begin(chainsBlocksEnemy[1]), end(chainsBlocksEnemy[1]));
+	winningMoves.insert(end(winningMoves), begin(twoGapOneEnemy), end(twoGapOneEnemy));
+
+	return winningMoves;
+}
+
 
 
 coordinates computerPlayer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
@@ -318,18 +351,15 @@ computerPlayer * generateAIInstance(int difficulty)
 	return instance;
 }
 
+
 coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	if (currentBoard->getMoveHistorySize() <= 2) {
 		return generateFirstMoves(currentBoard, whiteTurn);
 	}
-	vector<coordinates> winningMoves;
-	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
-	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
-	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
-	winningMoves.insert(end(winningMoves), begin(chainsBlocks[0]), end(chainsBlocks[0]));
+	vector<coordinates> winningMoves = forceAIToBlockInstantWin(currentBoard, whiteTurn);
 	if (winningMoves.size() != 0) {
-		return (winningMoves[rand() % winningMoves.size()]);
+		return (winningMoves[0]);
 	}
 	analyzedPositions = 0;
 	vector<coordinates> moves = generateMovesWorthChecking(currentBoard, whiteTurn);
@@ -367,7 +397,7 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 		penteBoard* boardCopy = new penteBoard(*currentBoard);
 		boardCopy->makeMove(moves[i].x, moves[i].y);
 			
-		int score = minMaxAlgorithm(boardCopy, 3, MININT, MAXINT, !whiteTurn);
+		int score = minMaxAlgorithm(boardCopy, 2, MININT, MAXINT, !whiteTurn);
 
 
 		lock_guard<std::mutex> lock(mutex);
@@ -381,6 +411,10 @@ coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 	}
 
 	for (int i = 0; i < moves.size(); ++i) {
+		if ((whiteTurn && scores[i] == bestMoveScore) || (!whiteTurn && scores[i] == bestMoveScore) && rand() % 2 == 0) {
+			bestMove = moves[i];
+			bestMoveScore = scores[i];
+		}
 		if ((whiteTurn && scores[i] > bestMoveScore) || (!whiteTurn && scores[i] < bestMoveScore)) {
 			bestMove = moves[i];
 			bestMoveScore = scores[i];
@@ -397,13 +431,9 @@ coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool white
 		return generateFirstMoves(currentBoard, whiteTurn);
 	}
 	//wygraj jednym ruchem
-	vector<coordinates> winningMoves;
-	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
-	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
-	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
-	winningMoves.insert(end(winningMoves), begin(chainsBlocks[0]), end(chainsBlocks[0]));
+	vector<coordinates> winningMoves = forceAIToBlockInstantWin(currentBoard, whiteTurn);
 	if (winningMoves.size() != 0) {
-		return (winningMoves[rand() % winningMoves.size()]);
+		return (winningMoves[0]);
 	}
 	analyzedPositions = 0;
 	vector<coordinates> moves = generateMovesWorthChecking(currentBoard, whiteTurn);
@@ -458,13 +488,9 @@ coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 	if (currentBoard->getMoveHistorySize() <= 2) {
 		return generateFirstMoves(currentBoard, whiteTurn);
 	}
-	vector<coordinates> winningMoves;
-	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, whiteTurn);
-	vector<chain> chains1 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 4);
-	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
-	winningMoves.insert(end(winningMoves), begin(chainsBlocks[0]), end(chainsBlocks[0]));
+	vector<coordinates> winningMoves = forceAIToBlockInstantWin(currentBoard, whiteTurn);
 	if (winningMoves.size() != 0) {
-		return (winningMoves[rand() % winningMoves.size()]);
+		return (winningMoves[0]);
 	}
 	analyzedPositions = 0;
 	vector<coordinates> moves = generateMovesWorthChecking(currentBoard, whiteTurn);
@@ -505,7 +531,7 @@ coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 			penteBoard* boardCopy = new penteBoard(*currentBoard);
 			boardCopy->makeMove(moves[i].x, moves[i].y);
 
-			int score = minMaxAlgorithm(boardCopy, 5, MININT, MAXINT, !whiteTurn);
+			int score = minMaxAlgorithm(boardCopy, 4, MININT, MAXINT, !whiteTurn);
 
 
 			lock_guard<std::mutex> lock(mutex);

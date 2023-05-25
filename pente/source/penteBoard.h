@@ -46,6 +46,7 @@ public:
 	void displayCredits();
 	void unmakeMove();
 	virtual void printBoardToConsole() { ; };
+	bool checkIfBoardFull();
 };
 
 class UTF8Pente : public penteBoard {

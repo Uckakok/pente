@@ -1,4 +1,4 @@
-penteVersion: regularPente
+penteVersion: keryoPente
 console: UTF8
 autosave: true
 pro: false

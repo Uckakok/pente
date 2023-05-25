@@ -10,6 +10,7 @@
 #define	UTF8CONSOLE	1
 
 
+
 #define MAXSTRING	1024
 #define WHITECOLOUR	"\033[0;37m"
 #define	REDCOLOUR	"\033[0;31m"

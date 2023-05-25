@@ -1,6 +1,6 @@
 ﻿#include<iostream>
 #include<vector>
-#include<Windows.h>
+#include<windows.h>
 #include<cstdio>
 #include<fstream>
 #include<string>
@@ -10,6 +10,7 @@
 #include"settings.h"
 #include"graphicalMode.h"
 #include<array> 
+#include<chrono>
 
 namespace fs = std::experimental::filesystem;
 using namespace std;
@@ -109,11 +110,9 @@ int mainMenu() {
 		cout << "4 - ustawienia" << endl;
 		cout << "5 - wyswielt zasady pente" << endl;
 		cout << "6 - wyjscie z programu" << endl;
-		if (cin >> choice) {
-			return choice;
-		}
-		cin.clear();
-		cin.ignore(1000, '\n');
+		char choice = _getch();
+		choice -= '0';
+		if (choice >= 1 && choice <= 6) return choice;
 	} while (true);
 }
 
@@ -138,11 +137,6 @@ vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
 	return allPieces;
 }
 
-void autoWindowUpdate(graphicalInterface *window) {
-	while (!closeUpdatingWhileAIThinks) {
-		window->windowUpdate();
-	}
-}
 
 void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 	currentGame->AIInstance = generateAIInstance(currentSettings->AIDifficulty);
@@ -209,6 +203,12 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			currentGame->printBoardToConsole();
 			cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
 			cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
+			if (currentGame->checkIfBoardFull()) {
+				cout << "Plansza zostala zapelniona! remis." << endl;
+				system("pause");
+				delete currentGame;
+				return;
+			}
 			if (currentGame->gameWon) {
 				currentGame->displayCredits();
 				system("pause");
@@ -223,10 +223,10 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			case -2: {
 				window->resetPosition();
 				window->closeWindow();
-				string saveChoice;
-				cout << "Czy chcesz zapisac gre? (tak/nie)" << endl;
-				cin >> saveChoice;
-				if (saveChoice == "tak") {
+				char saveChoice;
+				cout << "Czy chcesz zapisac gre? (t/n)" << endl;
+				saveChoice = _getch();
+				if (saveChoice == 't') {
 					currentGame->savePenteBoard();
 				}
 				else {
@@ -244,6 +244,12 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				currentGame->printBoardToConsole();
 				cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
 				cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
+			}
+			if (currentGame->checkIfBoardFull()) {
+				cout << "Plansza zostala zapelniona! remis." << endl;
+				system("pause");
+				delete currentGame;
+				return;
 			}
 			if (currentGame->gameWon) {
 				allPieces = getAllPieces(currentGame);
@@ -293,17 +299,17 @@ int main() {
 			gameLoop(currentGame, currentSettings);
 			break;
 		case 2: {
-			string playerColour;
-			cout << "Jako ktory gracz chcesz zagrac? (bialy/czarny)" << endl;
-			cin >> playerColour;
-			if (playerColour == "bialy") {
+			char playerColour;
+			cout << "Jako ktory gracz chcesz zagrac? (b/c)" << endl;
+			playerColour = _getch();
+			if (playerColour == 'b') {
 				currentGame = createBoard(currentSettings);
 				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = false;
 				currentGame->isAgainstAI = true;
 				gameLoop(currentGame, currentSettings);
 			}
-			else if (playerColour == "czarny") {
+			else if (playerColour == 'b') {
 				currentGame = createBoard(currentSettings);
 				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = true;
@@ -329,23 +335,23 @@ int main() {
 			else {
 				currentSettings->prefferedPenteVersion = currentGame->penteVariant;
 			}
-			cout << "Chcesz zagrac w trybie hotseat, czy przeciwko AI? (hotseat/AI)" << endl;
-			string gameEnemy;
-			cin >> gameEnemy;
-			if (gameEnemy == "hotseat") {
+			cout << "Chcesz zagrac w trybie hotseat, czy przeciwko AI? (h/a)" << endl;
+			char gameEnemy;
+			gameEnemy = _getch();
+			if (gameEnemy == 'h') {
 				cout << endl << "Aktualnie ruch gracza: " << (currentGame->isWhiteTurn ? "bialy" : "czarny") << endl;
 				gameLoop(currentGame, currentSettings);
 			}
-			else if (gameEnemy == "AI") {
-				string playerColour;
-				cout << "Jako ktory gracz chcesz zagrac? (bialy/czarny)" << endl;
-				cin >> playerColour;
-				if (playerColour == "bialy") {
+			else if (gameEnemy == 'a') {
+				char playerColour;
+				cout << "Jako ktory gracz chcesz zagrac? (b/c)" << endl;
+				playerColour = _getch();
+				if (playerColour == 'b') {
 					currentGame->isAIWhite = false;
 					currentGame->isAgainstAI = true;
 					gameLoop(currentGame, currentSettings);
 				}
-				else if (playerColour == "czarny") {
+				else if (playerColour == 'c') {
 					currentGame->isAIWhite = true;
 					currentGame->isAgainstAI = true;
 					gameLoop(currentGame, currentSettings);

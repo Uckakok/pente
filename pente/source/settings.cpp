@@ -242,7 +242,7 @@ void settings::changeSettings()
 	do {
 		system("cls");
 		repeat = true;
-		cout << "1 - wersja pente. Aktualny wybor: ";
+		cout << left << setw(50) << "1 - wersja pente. Aktualny wybor: " << REDCOLOUR;
 		if (prefferedPenteVersion == REGULARPENTE) {
 			cout << "zwyczajne pente" << endl;
 		}
@@ -252,7 +252,7 @@ void settings::changeSettings()
 		else {
 			cout << "nieznany rodzaj pente." << endl;
 		}
-		cout << "2 - rodzaj konsoli. Aktualny wybor: ";
+		cout << WHITECOLOUR << setw(50) << "2 - rodzaj konsoli. Aktualny wybor: " << REDCOLOUR;
 		if (prefferedConsole == ASCIICONSOLE) {
 			cout << "ASCII" << endl;
 		}
@@ -262,11 +262,11 @@ void settings::changeSettings()
 		else {
 			cout << "nieznany rodzaj konsoli" << endl;
 		}
-		cout << "3 - autozapis gry. Aktualny wybor: " << (autosaveOnExit ? "tak" : "nie") << endl;
-		cout << "4 - wersja pro. Aktualny wybor: " << (isPro ? "tak" : "nie") << endl;
-		cout << "5 - wersja graficzna. Aktualny wybor: " << (graphical ? "tak" : "nie") << endl;
-		cout << "6 - zezwol na cofanie ruchow. Aktualny wybor: " << (allowUndo ? "tak" : "nie") << endl;
-		cout << "7 - Poziom trudnosci AI. Aktualny wybor: ";
+		cout << WHITECOLOUR << setw(50) << "3 - autozapis gry. Aktualny wybor: " << REDCOLOUR << (autosaveOnExit ? "tak" : "nie") << endl;
+		cout << WHITECOLOUR << setw(50) << "4 - wersja pro. Aktualny wybor: " << REDCOLOUR << (isPro ? "tak" : "nie") << endl;
+		cout << WHITECOLOUR << setw(50) << "5 - wersja graficzna. Aktualny wybor: " << REDCOLOUR << (graphical ? "tak" : "nie") << endl;
+		cout << WHITECOLOUR << setw(50) << "6 - zezwol na cofanie ruchow. Aktualny wybor: " << REDCOLOUR << (allowUndo ? "tak" : "nie") << endl;
+		cout << WHITECOLOUR << setw(50) << "7 - Poziom trudnosci AI. Aktualny wybor: " << REDCOLOUR;
 		switch (AIDifficulty) {
 		case -1:
 			cout << "losowy";
@@ -290,20 +290,15 @@ void settings::changeSettings()
 			cout << "nierozpoznany";
 		}
 		cout << endl;
-		cout << "8 - zapisz ustawienia na dysku" << endl;
-		cout << "9 - powrot" << endl << endl << endl << endl << endl;
+		cout << WHITECOLOUR << setw(50) << "8 - zapisz ustawienia na dysku  " << endl;
+		cout << setw(50) << "9 - powrot  " << endl << endl << endl << endl << endl;
 		cout << "na niektorych urzadzeniach znaki UTF moga nie wyswietlac sie poprawnie, oraz tryb graficzny moze nie dzialac." << endl;
 		if (AIDifficulty == 4) {
 			cout << "UWAGA poziom mistrzowski AI moze dlugo generowac ruchy! Proponuje zmienic konfiguracje z DEBUG na Release by to przyspieszyc." << endl;
 		}
-		int choice;
-		if (!(cin >> choice)) {
-			system("cls");
-			repeat = true;
-			cin.clear();
-			cin.ignore(1000, '\n');
-			continue;
-		}
+		char choice;
+		choice = _getch();
+		choice -= '0';
 		switch (choice) {
 		case 1:
 			if (prefferedPenteVersion == REGULARPENTE) {

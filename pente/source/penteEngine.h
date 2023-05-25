@@ -23,7 +23,8 @@ public:
 	int staticPositionEvaluation(penteBoard *currentBoard);
 	int minMaxAlgorithm(penteBoard *currentBoard, int depth, int alpha, int beta, bool whiteTurn);
 	vector<coordinates> generateMovesWorthChecking(penteBoard *currentBoard, bool whiteTurn);
-	vector<coordinates> forceAIToBlockInstantWin(penteBoard *currentBoard, bool whiteTurn);
+	vector<coordinates> forcedOrWinning(penteBoard *currentBoard, bool whiteTurn);
+	coordinates prepareAndPerformMinMax(penteBoard *currentBoard, bool whiteTurn, int depth);
 };
 
 class advancedComputer : public computerPlayer{

@@ -166,22 +166,26 @@ bool penteBoard::makeMove(int x, int y)
 		bool blockedFirstDir = false;
 		bool blockedSecondDir = false;
 		for (int j = 1; j < 5; ++j) {
-			if (x + j * dir[i * 2][1] >= 0 && x + j * dir[i * 2][1] < BOARDSIZE && y + j * dir[i * 2][0] >= 0 && y + j * dir[i * 2][0] < BOARDSIZE && !blockedFirstDir) {
-				if (board[y + j * dir[i * 2][0]][x + j * dir[i * 2][1]] == (isWhiteTurn ? WHITE : BLACK)) {
-					rowCount += 1;
-				}
-				else {
-					blockedFirstDir = true;
-				}
+			if (x + j * dir[i * 2][1] < 0 || x + j * dir[i * 2][1] >= BOARDSIZE || y + j * dir[i * 2][0] < 0 || y + j * dir[i * 2][0] >= BOARDSIZE || blockedFirstDir) {
+				continue;
 			}
-			if (x + j * dir[i * 2 + 1][1] >= 0 && x + j * dir[i * 2 + 1][1] < BOARDSIZE && y + j * dir[i * 2 + 1][0] >= 0 && y + j * dir[i * 2 + 1][0] < BOARDSIZE && !blockedSecondDir) {
-				if (board[y + j * dir[i * 2 + 1][0]][x + j * dir[i * 2 + 1][1]] == (isWhiteTurn ? WHITE : BLACK)) {
-					rowCount += 1;
-				}
-				else {
-					blockedSecondDir = true;
-				}
+			if (board[y + j * dir[i * 2][0]][x + j * dir[i * 2][1]] == (isWhiteTurn ? WHITE : BLACK)) {
+				rowCount += 1;
 			}
+			else {
+				blockedFirstDir = true;
+			}
+			
+			if (x + j * dir[i * 2 + 1][1] < 0 || x + j * dir[i * 2 + 1][1] >= BOARDSIZE || y + j * dir[i * 2 + 1][0] < 0 || y + j * dir[i * 2 + 1][0] >= BOARDSIZE || blockedSecondDir) {
+				continue;
+			}
+			if (board[y + j * dir[i * 2 + 1][0]][x + j * dir[i * 2 + 1][1]] == (isWhiteTurn ? WHITE : BLACK)) {
+				rowCount += 1;
+			}
+			else {
+				blockedSecondDir = true;
+			}
+			
 		}
 		if (rowCount >= 5) {
 			gameWon = true;
@@ -199,19 +203,21 @@ bool penteBoard::makeMove(int x, int y)
 		int enemies[8] = { 0 };
 		bool canContinue[8] = { true, true, true, true, true, true, true, true };
 		bool shouldRemove[8] = { false };
-		for (int j = 1; j < 4; ++j) {
-			if (x + j * dir[i][1] >= 0 && x + j * dir[i][1] < BOARDSIZE && y + j * dir[i][0] >= 0 && y + j * dir[i][0] < BOARDSIZE) {
-				if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? BLACK : WHITE) && canContinue[i]) {
-					enemies[i]++;
-				}
-				else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? WHITE : BLACK) && canContinue[i]) {
-					shouldRemove[i] = true;
-					canContinue[i] = false;
-				}
-				else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == EMPTY) {
-					canContinue[i] = false;
-				}
+		for (int j = 1; j < 5; ++j) {
+			if (x + j * dir[i][1] < 0 || x + j * dir[i][1] >= BOARDSIZE || y + j * dir[i][0] < 0 || y + j * dir[i][0] >= BOARDSIZE) {
+				continue;
 			}
+			if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? BLACK : WHITE) && canContinue[i]) {
+				enemies[i]++;
+			}
+			else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == (isWhiteTurn ? WHITE : BLACK) && canContinue[i]) {
+				shouldRemove[i] = true;
+				canContinue[i] = false;
+			}
+			else if (board[y + j * dir[i][0]][x + j * dir[i][1]] == EMPTY) {
+				canContinue[i] = false;
+			}
+			
 		}
 		if (shouldRemove[i]) {
 			switch (enemies[i]) {
@@ -291,6 +297,16 @@ void penteBoard::unmakeMove()
 	}
 	moveHistory.pop_back();
 	isWhiteTurn = !isWhiteTurn;
+}
+
+bool penteBoard::checkIfBoardFull()
+{
+	for (int i = 0; i < BOARDSIZE; ++i) {
+		for (int j = 0; j < BOARDSIZE; ++j) {
+			if (board[i][j] == EMPTY) return false;
+		}
+	}
+	return true;
 }
 
 void UTF8Pente::printBoardToConsole()

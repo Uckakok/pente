@@ -10,8 +10,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	{
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		communication.x = round((xpos - 60) / disBetweenSquares);
-		communication.y = round((ypos - 60) / disBetweenSquares);
+		communication.x = (int)round((xpos - 60) / disBetweenSquares);
+		communication.y = (int)round((ypos - 60) / disBetweenSquares);
 	}
 }
 

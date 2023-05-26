@@ -1,5 +1,14 @@
 #pragma once
 #include"graphicalMode.h"
+#include<GL/glew.h>
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<sstream>
+#include"vendor/glm/gtc/matrix_transform.hpp"
+#include<vector>
+#include<cmath>
+
 
 coordinates communication = { -1, -1 };
 float disBetweenSquares = 420.0f / 18.0f;
@@ -17,6 +26,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 
 graphicalInterface::graphicalInterface() {
+	va = NULL;
+
 	if (!glfwInit()) {
 		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji" << std::endl;
 		__debugbreak();

@@ -2,14 +2,6 @@
 
 #include"declarations.h"
 #include<vector>
-#include<iostream>
-#include<vector>
-#include<Windows.h>
-#include<cstdio>
-#include<fstream>
-#include<string>
-#include<filesystem>
-#include<iterator>
 
 class computerPlayer;
 class advancedComputer;

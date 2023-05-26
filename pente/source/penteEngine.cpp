@@ -1,6 +1,18 @@
 #include "penteEngine.h"
+#include"declarations.h"
+#include"analyzeBoard.h"
+#include<mutex>
+#include<thread>
+#include<atomic>
+#include<iostream>
+#include<limits.h>
+#include<chrono>
+#include <functional>
+#include<unordered_map>
 
 atomic<int> analyzedPositions(0);
+
+//unordered_map<string, int> evaluationMap;
 
 array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * currentBoard, bool whiteTurn)
 {
@@ -96,6 +108,8 @@ coordinates computerPlayer::generateFirstMoves(penteBoard * currentBoard, bool w
 			return possibleMoves[rand() % possibleMoves.size()];
 		}
 	}
+	cout << "Krytyczny blad programu." << __FILE__ << " " << __LINE__ << endl;
+	return { -1, -1 };
 }
 
 int computerPlayer::evaluatePlayer(penteBoard *currentBoard, bool whiteTurn) {
@@ -139,13 +153,19 @@ int computerPlayer::evaluatePlayer(penteBoard *currentBoard, bool whiteTurn) {
 
 int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 {
+	/*string key = createHashKey(currentBoard);
+	auto it = evaluationMap.find(key);
+	if (it != evaluationMap.end()) {
+		return it->second;
+	}*/
+	
 	//dodatnie dla bia³ego, ujemne dla czarnego
 	if (currentBoard->gameWon) {
 		if (currentBoard->winner == WHITE) {
-			return MAXINT;
+			return INT_MAX;
 		}
 		else if (currentBoard->winner == BLACK) {
-			return MININT;
+			return INT_MIN;
 		}
 	}
 	//sprawdzenie gracza bia³ego
@@ -154,6 +174,7 @@ int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 	score -= evaluatePlayer(currentBoard, false);
 	int takings = currentBoard->takesForWhite - currentBoard->takesForBlack;
 	score += takings * 8000;
+	//evaluationMap[key] = score;
 	return score;
 }
 
@@ -171,7 +192,7 @@ int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, int al
 		return staticPositionEvaluation(currentBoard);
 	}
 	if (whiteTurn) {
-		int maxEvaluation = MININT;
+		int maxEvaluation = INT_MIN;
 		for (auto& move : movesToCheck) {
 			int takesForWhite = currentBoard->takesForWhite;
 			int takesForBlack = currentBoard->takesForBlack;
@@ -191,7 +212,7 @@ int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, int al
 		return maxEvaluation;
 	}
 	else {
-		int minEvaluation = MAXINT;
+		int minEvaluation = INT_MAX;
 		for (auto& move : movesToCheck) {
 			int takesForWhite = currentBoard->takesForWhite;
 			int takesForBlack = currentBoard->takesForBlack;
@@ -244,6 +265,8 @@ vector<coordinates> computerPlayer::forcedOrWinning(penteBoard * currentBoard, b
 	vector<chain> chains2 = analyzeBoard::analyzeForChains(currentBoard, whiteTurn, 3);
 	array<vector<coordinates>, 5> chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains1);
 	winningMoves.insert(end(winningMoves), begin(chainsBlocks[0]), end(chainsBlocks[0]));
+	if (winningMoves.size() != 0)
+		return winningMoves;
 
 	//sprawdzenie czy przeciwnik moze wygrac jednym ruchem (priorytet 1)
 	winningMoves = analyzeBoard::analyzeForFourWithGap(currentBoard, !whiteTurn);
@@ -251,13 +274,15 @@ vector<coordinates> computerPlayer::forcedOrWinning(penteBoard * currentBoard, b
 	vector<chain> enemyChains2 = analyzeBoard::analyzeForChains(currentBoard, !whiteTurn, 3);
 	array<vector<coordinates>, 5> chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains1);
 	winningMoves.insert(end(winningMoves), begin(chainsBlocksEnemy[0]), end(chainsBlocksEnemy[0]));
-
+	if (winningMoves.size() != 0)
+		return winningMoves;
 	//sprawdzenie czy mo¿na u³o¿yæ czwórkê odblokowan¹ z dwóch stron lub 2 przerwa 1 i odwrotnie(priorytet 2)
 	vector<coordinates> twoGapOnePlayer = analyzeBoard::analyzeForThreeWithGap(currentBoard, whiteTurn);
 	chainsBlocks = analyzeBoard::blockingChains(currentBoard, chains2);
 	winningMoves.insert(end(winningMoves), begin(chainsBlocks[1]), end(chainsBlocks[1]));
 	winningMoves.insert(end(winningMoves), begin(twoGapOnePlayer), end(twoGapOnePlayer));
-
+	if (winningMoves.size() != 0)
+		return winningMoves;
 	//zablokowanie trójki przeciwnika odblokowanej z obu stron i 2 przerwa 1, lub odwrotnie (priorytet 3)
 	vector<coordinates> twoGapOneEnemy = analyzeBoard::analyzeForThreeWithGap(currentBoard, !whiteTurn);
 	chainsBlocksEnemy = analyzeBoard::blockingChains(currentBoard, enemyChains2);
@@ -269,6 +294,7 @@ vector<coordinates> computerPlayer::forcedOrWinning(penteBoard * currentBoard, b
 
 coordinates computerPlayer::prepareAndPerformMinMax(penteBoard * currentBoard, bool whiteTurn, int depth)
 {
+	using namespace chrono;
 	if (currentBoard->getMoveHistorySize() <= 2) {
 		return generateFirstMoves(currentBoard, whiteTurn);
 	}
@@ -299,20 +325,21 @@ coordinates computerPlayer::prepareAndPerformMinMax(penteBoard * currentBoard, b
 		return moveToTest;
 	}
 	coordinates bestMove = moves[0];
-	int bestMoveScore = (whiteTurn ? MININT : MAXINT);
+	int bestMoveScore = (whiteTurn ? INT_MIN : INT_MAX);
 
 	vector<thread> threads;
 	mutex mutex;
 	vector<int> scores(moves.size());
 
-	for (int i = 0; i < moves.size(); ++i) {
+	milliseconds start = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+	for (int i = 0; i < (signed)moves.size(); ++i) {
 		threads.emplace_back([&, i]() {
 
 
 			penteBoard* boardCopy = new penteBoard(*currentBoard);
 			boardCopy->makeMove(moves[i].x, moves[i].y);
 
-			int score = minMaxAlgorithm(boardCopy, depth, MININT, MAXINT, !whiteTurn);
+			int score = minMaxAlgorithm(boardCopy, depth, INT_MIN, INT_MAX, !whiteTurn);
 
 
 			lock_guard<std::mutex> lock(mutex);
@@ -325,7 +352,7 @@ coordinates computerPlayer::prepareAndPerformMinMax(penteBoard * currentBoard, b
 		thread.join();
 	}
 
-	for (int i = 0; i < moves.size(); ++i) {
+	for (int i = 0; i < (signed)moves.size(); ++i) {
 		if ((whiteTurn && scores[i] == bestMoveScore) || (!whiteTurn && scores[i] == bestMoveScore) && rand() % 2 == 0) {
 			bestMove = moves[i];
 			bestMoveScore = scores[i];
@@ -335,8 +362,9 @@ coordinates computerPlayer::prepareAndPerformMinMax(penteBoard * currentBoard, b
 			bestMoveScore = scores[i];
 		}
 	}
+	milliseconds end = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
-	cout << "przeanalizowanych pozycji: " << analyzedPositions.load() << endl;
+	cout << "przeanalizowano: " << analyzedPositions.load() << " pozycji w:  " << (end - start).count() << " milisekund" << endl;
 	return bestMove;
 }
 

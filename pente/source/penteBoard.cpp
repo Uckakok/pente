@@ -1,5 +1,11 @@
-
 #include"penteBoard.h"
+#include<iostream>
+#include<Windows.h>
+#include<cstdio>
+#include<fstream>
+#include<string>
+#include<filesystem>
+#include<iterator>
 
 penteBoard::penteBoard()
 {
@@ -116,7 +122,7 @@ bool penteBoard::checkIfMoveLegal(int x, int y)
 }
 
 int penteBoard::getMoveHistorySize() {
-	return max(moveHistory.size(), minMoves);
+	return max((signed)moveHistory.size(), minMoves);
 }
 
 bool penteBoard::checkIfMoveLegalProPente(int x, int y)
@@ -286,7 +292,7 @@ void penteBoard::displayCredits()
 
 void penteBoard::unmakeMove()
 {
-	if (moveHistory.size() == 0 || moveHistory.size() <= minMoves) {
+	if (moveHistory.size() == 0 || (signed)moveHistory.size() <= minMoves) {
 		cout << "brak ruchów do cofania" << endl;
 		return;
 	}

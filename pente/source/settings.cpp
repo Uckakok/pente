@@ -1,4 +1,14 @@
 #include "settings.h"
+#include"declarations.h"
+#include"settings.h"
+#include<iostream>
+#include<fstream>
+#include<string>
+#include <iomanip>
+#include<stdio.h>
+#include <conio.h>
+
+using namespace std;
 
 settings::settings()
 {
@@ -334,6 +344,8 @@ void settings::changeSettings()
 			break;
 		case 8:
 			saveCurrentSettings();
+			cout << endl << endl << "Zapisano nowe ustawienia!" << endl;
+			system("pause");
 			break;
 		case 9:
 			repeat = false;

@@ -1,13 +1,9 @@
 #pragma once
 
 #include<array>
-#include"declarations.h"
 #include<vector>
-#include"analyzeBoard.h"
 #include"penteBoard.h"
-#include<mutex>
-#include<thread>
-#include<atomic>
+#include <bitset>
 
 
 
@@ -64,3 +60,5 @@ public:
 };
 
 computerPlayer* generateAIInstance(int difficulty); 
+bitset<730> boardHash(penteBoard *boardToHash);
+void unhashBoard(bitset<730> hash);

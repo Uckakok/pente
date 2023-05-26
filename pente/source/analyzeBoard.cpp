@@ -14,7 +14,7 @@ vector<coordinates> analyzeBoard::analyzeForTakings(penteBoard * boardToAnalyze,
 			for (int i = 0; i < 8; ++i) {
 				coordinates temp = { -1, -1 };
 				int tempEnemies = 0;
-				for (int j = 1; j < 4; ++j) {
+				for (int j = 1; j < 5; ++j) {
 					if (x + j * dir[i][1] < 0 || x + j * dir[i][1] >= BOARDSIZE || y + j * dir[i][0] < 0 || y + j * dir[i][0] >= BOARDSIZE) {
 						break;
 					}

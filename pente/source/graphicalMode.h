@@ -1,23 +1,15 @@
 #pragma once
-
-#include<GL/glew.h>
-#include<GLFW/glfw3.h>
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<sstream>
-#include"Renderer.h"
+#include"texture.h"
+#include"shader.h"
 #include"indexBuffer.h"
 #include"vertexBuffer.h"
 #include"vertexArray.h"
-#include"shader.h"
 #include"vertexBufferLayout.h"
-#include"texture.h"
 #include"vendor/glm/glm.hpp"
-#include"vendor/glm/gtc/matrix_transform.hpp"
+#include<GLFW/glfw3.h>
+#include"Renderer.h"
 #include"declarations.h"
-#include<vector>
-#include<cmath>
+
 
 typedef struct {
 	int x;

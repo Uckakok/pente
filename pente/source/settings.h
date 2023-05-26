@@ -1,17 +1,5 @@
 #pragma once
 
-#include"settings.h"
-#include"declarations.h"
-#include<iostream>
-#include<fstream>
-#include<string>
-#include <iomanip>
-#include<stdio.h>
-#include <conio.h>
-
-using namespace std;
-
-
 class settings {
 private:
 

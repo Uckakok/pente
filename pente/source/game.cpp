@@ -246,6 +246,9 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			default:
 				currentGame->makeMove(nextMove.x, nextMove.y);
 				window->resetPosition();
+				allPieces = getAllPieces(currentGame);
+				window->newPiecesToDraw(allPieces);
+				window->windowUpdate();
 				currentGame->printBoardToConsole();
 				cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
 				cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
@@ -314,7 +317,7 @@ int startGame() {
 				currentGame->isAgainstAI = true;
 				gameLoop(currentGame, currentSettings);
 			}
-			else if (playerColour == 'b') {
+			else if (playerColour == 'c') {
 				currentGame = createBoard(currentSettings);
 				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = true;

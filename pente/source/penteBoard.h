@@ -44,11 +44,13 @@ public:
 class UTF8Pente : public penteBoard {
 public:
 	void printBoardToConsole() override;
-	using penteBoard::penteBoard;
+	UTF8Pente(string pathToLoad) : penteBoard(pathToLoad) {}
+	UTF8Pente() : penteBoard() {}
 };
 
 class ASCIIPente : public penteBoard {
 public:
 	void printBoardToConsole() override;
-	using penteBoard::penteBoard;
+	ASCIIPente(string pathToLoad) : penteBoard(pathToLoad) {}
+	ASCIIPente() : penteBoard() {}
 };

@@ -6,8 +6,8 @@
 #include<conio.h>
 #include"game.h"
 #include <bitset>
+#include<Windows.h>
 
-namespace fs = std::experimental::filesystem;
 using namespace std;
 
 coordinates gameChoices(settings *currentSettings) {
@@ -61,6 +61,8 @@ coordinates gameChoices(settings *currentSettings) {
 	return returnValue;
 }
 
+
+
 void printPenteRules() {
 	system("cls");
 	cout << "Kazdy z dwoch graczy ma do dyspozycji kamienie: jeden koloru bialego, drugi -- czarnego, ktore ukladaja na przemian na wolnych polach planszy." << endl;
@@ -71,24 +73,32 @@ void printPenteRules() {
 	cout << "* pierwszy ruch czarnych musi byc na srodku planszy" << endl;
 	cout << "* pierwszy ruch bialych moze byc gdziekolwiek" << endl;
 	cout << "* drugi ruch czarnych musi byc poza centralnym kwadratem 5x5" << endl;
-	cout << "* pozostale ruchy zarowno czarnych jak i bialych moga byæ gdziekolwiek" << endl << endl;
+	cout << "* pozostale ruchy zarowno czarnych jak i bialych moga byc gdziekolwiek" << endl << endl;
 	cout << "uzyta instrukcja dostepna na: http://gomoku.5v.pl/index.php/zasady-pente" << endl;
 	system("pause");
 	return;
 }
 
+
 void listSavesInWorkingDirectory() {
+	
 	vector<string> entries;
-	for (fs::path path : fs::directory_iterator(fs::current_path())) {
-		;
-		string path_string{ path.string() };
-		entries.push_back(path_string);
+	WIN32_FIND_DATA findData;
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	char buffer[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, buffer);
+	strcat_s(buffer, MAX_PATH, TEXT("\\*"));
+	hFind = FindFirstFile(buffer, &findData);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			if (!(findData.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)) {
+				entries.push_back(findData.cFileName);
+			}
+		} while (FindNextFile(hFind, &findData) != 0);
+		FindClose(hFind);
 	}
-	fs::path path{ fs::current_path() };
-	string path_string{ path.string() };
 	cout << endl << endl;
 	for (auto & entry : entries) {
-		entry.erase(0, path_string.length() + 1);
 		if (entry.length() >= 4 && entry.substr(entry.length() - 4, entry.length()) == ".pnt") {
 			cout << entry << endl;
 		}
@@ -154,6 +164,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 		coordinates nextMove;
 		if (currentGame->isAgainstAI && currentGame->isAIWhite == currentGame->isWhiteTurn) {
 			nextMove = currentGame->AIInstance->findBestMove(currentGame, currentGame->isWhiteTurn);
+			cout << "Ruch AI: " << (char)(nextMove.x + 97) << " " << nextMove.y + 1 << endl;
 			currentGame->gameWon = false;
 			currentGame->winner = -1;
 		}

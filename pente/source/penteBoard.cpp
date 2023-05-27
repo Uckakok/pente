@@ -334,11 +334,11 @@ void UTF8Pente::printBoardToConsole()
 				break;
 			case WHITE:
 				printf("%s", WHITECOLOUR);
-				cout << u8"•";
+				printf("%s", "\xE2\x80\xA2");
 				break;
 			case BLACK:
 				printf("%s", REDCOLOUR);
-				cout << u8"•";
+				printf("%s", "\xE2\x80\xA2");
 				break;
 			default:
 				system("cls");

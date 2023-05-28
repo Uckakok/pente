@@ -448,7 +448,7 @@ coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTu
 coordinates easyComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	//szanse przedstawione jako 1 na ile przypadkow przegapi dana kategorie ruchow
-	int chancesToOverlook[] = { 20, 10, 8, 6, 4, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2};
+	int chancesToOverlook[] = { 20, 10, 8, 6, 4, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2};
 	array<vector<coordinates>, 16> moves = getAllGoodMoves(currentBoard, whiteTurn);
 	for (int i = 0; i < 16; ++i) {
 		if (moves[i].size() == 0) continue;

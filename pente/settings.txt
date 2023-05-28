@@ -4,4 +4,4 @@ autosave: true
 pro: false
 graphical: true
 undo: true
-AI: 4
+AI: 0

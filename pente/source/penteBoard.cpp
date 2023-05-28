@@ -156,11 +156,11 @@ bool penteBoard::checkIfMoveLegalProPente(int x, int y)
 bool penteBoard::makeMove(int x, int y)
 {
 	if (!isPro && !checkIfMoveLegal(x, y)) {
-		cout << "Podany zostal nieprawidlowy ruch!" << x << ", " << y << endl;
+		cout << "Podany zostal nieprawidlowy ruch!" << endl;
 		return false;
 	}
 	if (isPro && !checkIfMoveLegalProPente(x, y)) {
-		cout << "Podany zostal nieprawidlowy ruch!" << x << ", " << y << endl;
+		cout << "Podany zostal nieprawidlowy ruch!" << endl;
 		return false;
 	}
 	board[y][x] = isWhiteTurn ? WHITE : BLACK;
@@ -173,25 +173,28 @@ bool penteBoard::makeMove(int x, int y)
 		bool blockedSecondDir = false;
 		for (int j = 1; j < 5; ++j) {
 			if (x + j * dir[i * 2][1] < 0 || x + j * dir[i * 2][1] >= BOARDSIZE || y + j * dir[i * 2][0] < 0 || y + j * dir[i * 2][0] >= BOARDSIZE || blockedFirstDir) {
-				continue;
-			}
-			if (board[y + j * dir[i * 2][0]][x + j * dir[i * 2][1]] == (isWhiteTurn ? WHITE : BLACK)) {
-				rowCount += 1;
+				;
 			}
 			else {
-				blockedFirstDir = true;
+				if (board[y + j * dir[i * 2][0]][x + j * dir[i * 2][1]] == (isWhiteTurn ? WHITE : BLACK)) {
+					rowCount += 1;
+				}
+				else {
+					blockedFirstDir = true;
+				}
 			}
 			
 			if (x + j * dir[i * 2 + 1][1] < 0 || x + j * dir[i * 2 + 1][1] >= BOARDSIZE || y + j * dir[i * 2 + 1][0] < 0 || y + j * dir[i * 2 + 1][0] >= BOARDSIZE || blockedSecondDir) {
-				continue;
-			}
-			if (board[y + j * dir[i * 2 + 1][0]][x + j * dir[i * 2 + 1][1]] == (isWhiteTurn ? WHITE : BLACK)) {
-				rowCount += 1;
+				;
 			}
 			else {
-				blockedSecondDir = true;
+				if (board[y + j * dir[i * 2 + 1][0]][x + j * dir[i * 2 + 1][1]] == (isWhiteTurn ? WHITE : BLACK)) {
+					rowCount += 1;
+				}
+				else {
+					blockedSecondDir = true;
+				}
 			}
-			
 		}
 		if (rowCount >= 5) {
 			gameWon = true;

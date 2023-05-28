@@ -67,7 +67,7 @@ void printPenteRules() {
 	system("cls");
 	cout << "Kazdy z dwoch graczy ma do dyspozycji kamienie: jeden koloru bialego, drugi -- czarnego, ktore ukladaja na przemian na wolnych polach planszy." << endl;
 	cout << "Celem gry jest ulozenie pieciu lub wiecej kamieni swojego koloru w ciaglej linii -- poziomej, pionowej lub ukosnej -- badz zbicie 10 kamieni przeciwnika. Pierwszy gracz, ktory tego dokona, zostaje zwyciezca; jesli nie uda sie to nikomu (plansza zostanie zapelniona), nastepuje remis." << endl;
-	cout << "Bicie kamieni przeciwnika nastepuje przez otoczenie pary jego sasiaduj¹cych kamieni z obu stron. Zbite kamienie sa usuwane z planszy, a pola, ktore okupowaly, moga byc ponownie wykorzystane w grze. W jednym ruchu mozna zbic wiecej niz jedna pare." << endl;
+	cout << "Bicie kamieni przeciwnika nastepuje przez otoczenie pary jego sasiadujacych kamieni z obu stron. Zbite kamienie sa usuwane z planszy, a pola, ktore okupowaly, moga byc ponownie wykorzystane w grze. W jednym ruchu mozna zbic wiecej niz jedna pare." << endl;
 	cout << "Istnieje odmiana gry noszaca nazwe KERYO-PENTE, w ktorej dozwolone jest takze bicie trojek, nie tylko par. Zwyciezca zostaje gracz, ktory ulozy piec lub wiecej kamieni swojego koloru w ciaglej linii, albo zbije 15 kamieni przeciwnika." << endl;
 	cout << "Zarowno pente jak i keryo-pente posiadaja swoje odmiany PRO, w ktorych wystêpuja nastepujace wymagania dotyczace poczatkowych ruchow na planszy:" << endl;
 	cout << "* pierwszy ruch czarnych musi byc na srodku planszy" << endl;
@@ -214,6 +214,12 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				delete currentGame;
 				return;
 			}
+			if (currentGame->checkIfBoardFull()) {
+				cout << "Plansza zostala zapelniona! remis." << endl;
+				system("pause");
+				delete currentGame;
+				return;
+			}
 			if (currentGame->gameWon) {
 				currentGame->displayCredits();
 				system("pause");
@@ -255,6 +261,15 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			}
 			if (currentGame->checkIfBoardFull()) {
 				cout << "Plansza zostala zapelniona! remis." << endl;
+				allPieces = getAllPieces(currentGame);
+				window->newPiecesToDraw(allPieces);
+				window->windowUpdate();
+				MessageBox(NULL, "Gra zakonczona!", "Pente!", MB_ICONINFORMATION | MB_OK);
+				while (true) {
+					if (window->shouldCloseWindow()) break;
+					window->windowUpdate();
+				}
+				window->closeWindow();
 				system("pause");
 				delete currentGame;
 				return;
@@ -264,6 +279,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				window->newPiecesToDraw(allPieces);
 				window->windowUpdate();
 				currentGame->displayCredits();
+				MessageBox(NULL, "Gra zakonczona!", "Pente!", MB_ICONINFORMATION | MB_OK);
 				while (true) {
 					if (window->shouldCloseWindow()) break;
 					window->windowUpdate();

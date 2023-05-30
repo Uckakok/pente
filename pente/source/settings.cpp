@@ -10,7 +10,9 @@
 
 using namespace std;
 
-settings::settings()
+
+settings::settings() : prefferedConsole(UTF8CONSOLE), prefferedPenteVersion(REGULARPENTE), autosaveOnExit(true), isPro(false), graphical(false),
+allowUndo(false), AIDifficulty(2)
 {
 	ifstream settingsHandle;
 	bool possibleToRead = true;
@@ -160,13 +162,6 @@ settings::settings()
 			return;
 		}
 	}
-	prefferedConsole = UTF8CONSOLE;
-	prefferedPenteVersion = REGULARPENTE;
-	autosaveOnExit = true;
-	isPro = false;
-	graphical = false;
-	allowUndo = false;
-	AIDifficulty = 2;
 }
 
 bool settings::saveCurrentSettings()

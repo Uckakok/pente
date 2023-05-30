@@ -375,7 +375,11 @@ coordinates computerPlayer::findBestMove(penteBoard * currentBoard, bool whiteTu
 	if (currentBoard->getMoveHistorySize() <= 2) {
 		return generateFirstMoves(currentBoard, whiteTurn);
 	}
-	return coordinates({rand() % BOARDSIZE, rand() % BOARDSIZE});
+	coordinates moveToTest;
+	do {
+		moveToTest = { rand() % BOARDSIZE, rand() % BOARDSIZE };
+	} while (currentBoard->board[moveToTest.y][moveToTest.x] != EMPTY);
+	return moveToTest;
 }
 
 coordinates mediumComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)

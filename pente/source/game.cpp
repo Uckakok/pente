@@ -22,7 +22,8 @@ coordinates gameChoices(settings *currentSettings) {
 		cout << "1 - zapisz gre" << endl;
 		cout << "2 - wyjdz do menu" << endl;
 		cout << "3 - wyjdz do windows" << endl;
-		if (currentSettings->allowUndo) cout << "4 - cofnij poprzedni ruch" << endl;
+		cout << "4 - przelacz na tryb graficzny" << endl;
+		if (currentSettings->allowUndo) cout << "5 - cofnij poprzedni ruch" << endl;
 		scanf_s("%s", answer, _countof(answer));
 		if (isdigit(answer[0])) {
 			switch (answer[0]) {
@@ -37,6 +38,9 @@ coordinates gameChoices(settings *currentSettings) {
 				return returnValue;
 			case '4':
 				returnValue.x = -4;
+				return returnValue;
+			case '5':
+				returnValue.x = -5;
 				return returnValue;
 			}
 		}
@@ -164,7 +168,7 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 		coordinates nextMove;
 		if (currentGame->isAgainstAI && currentGame->isAIWhite == currentGame->isWhiteTurn) {
 			nextMove = currentGame->AIInstance->findBestMove(currentGame, currentGame->isWhiteTurn);
-			cout << "Ruch AI: " << (char)(nextMove.x + 97) << " " << nextMove.y + 1 << endl;
+			cout << "Ruch AI: " << (char)(nextMove.x + 97) << BOARDSIZE - (nextMove.y) << endl;
 			currentGame->gameWon = false;
 			currentGame->winner = -1;
 		}
@@ -198,7 +202,24 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 				delete currentSettings;
 				exit(EXIT_SUCCESS);
 			case -4:
+				currentSettings->graphical = true;
+				window = new graphicalInterface();
+				window->blendEnable();
+				window->prepareVertexArray();
+				window->prepareVertexBuffer();
+				window->prepareShaders();
+				window->unbindStuff();
+				window->setupCallbacks();
+				window->setupMatrices();
+				allPieces = getAllPieces(currentGame);
+				window->newPiecesToDraw(allPieces);
+				window->windowUpdate();
+				break;
+			case -5:
 				if (currentSettings->allowUndo) {
+					if (currentGame->isAgainstAI){
+						currentGame->unmakeMove();
+					}
 					currentGame->unmakeMove();
 				}
 				break;
@@ -231,24 +252,12 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 			switch (nextMove.x) {
 			case -1:
 				break;
-			case -2: {
+			case -2:
+				currentSettings->graphical = false;
 				window->resetPosition();
 				window->closeWindow();
-				char saveChoice;
-				cout << "Czy chcesz zapisac gre? (t/n)" << endl;
-				saveChoice = _getch();
-				if (saveChoice == 't') {
-					currentGame->savePenteBoard();
-				}
-				else {
-					;
-				}
-				if (currentSettings->autosaveOnExit) {
-					currentGame->savePenteBoard(true);
-				}
-				delete currentGame;
 				delete window;
-				return; }
+				break;
 			default:
 				currentGame->makeMove(nextMove.x, nextMove.y);
 				window->resetPosition();

@@ -19,8 +19,13 @@ typedef struct {
 
 class graphicalInterface {
 private:
-	float squareVertex[16];
-	unsigned int squareIndices[6];
+	float squareVertex[16] = {
+		-50.0f, -50.0f, 0.0f, 0.0f,
+		 50.0f, -50.0f, 1.0f, 0.0f,
+		 50.0f,  50.0f, 1.0f, 1.0f,
+		-50.0f,  50.0f, 0.0f, 1.0f
+	};
+	unsigned int squareIndices[6] = {0, 1, 2, 2, 3, 0};
 	GLFWwindow *window;
 	GLuint vao;
 	vertexArray *va;

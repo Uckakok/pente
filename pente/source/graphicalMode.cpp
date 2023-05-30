@@ -25,37 +25,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 
-graphicalInterface::graphicalInterface() {
-	va = NULL;
+graphicalInterface::graphicalInterface() :va(NULL) {
 
 	if (!glfwInit()) {
 		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji" << std::endl;
 		__debugbreak();
 		return;
 	}
-	squareVertex[0] = -50.0f;
-	squareVertex[1] = -50.0f;
-	squareVertex[2] = 0.0f;
-	squareVertex[3] = 0.0f;
-	squareVertex[4] = 50.0f;
-	squareVertex[5] = -50.0f;
-	squareVertex[6] = 1.0f;
-	squareVertex[7] = 0.0f;
-	squareVertex[8] = 50.0f;
-	squareVertex[9] = 50.0f;
-	squareVertex[10] = 1.0f;
-	squareVertex[11] = 1.0f;
-	squareVertex[12] = -50.0f;
-	squareVertex[13] = 50.0f;
-	squareVertex[14] = 0.0f;
-	squareVertex[15] = 1.0f;
-
-	squareIndices[0] = 0;
-	squareIndices[1] = 1;
-	squareIndices[2] = 2;
-	squareIndices[3] = 2;
-	squareIndices[4] = 3;
-	squareIndices[5] = 0;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -183,8 +159,7 @@ void graphicalInterface::closeWindow()
 
 void graphicalInterface::resetPosition()
 {
-	communication.x = -1;
-	communication.y = -1;
+	communication = { -1, -1 };
 }
 
 void graphicalInterface::newPiecesToDraw(const std::vector<pieceToDraw>& newPieces)

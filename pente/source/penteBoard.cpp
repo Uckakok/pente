@@ -7,10 +7,8 @@
 #include<filesystem>
 #include<iterator>
 
-penteBoard::penteBoard()
+penteBoard::penteBoard() : isPro(false), penteVariant(REGULARPENTE)
 {
-	isPro = false;
-	penteVariant = REGULARPENTE;
 	for (int i = 0; i < BOARDSIZE; ++i) {
 		for (int j = 0; j < BOARDSIZE; ++j) {
 			board[i][j] = EMPTY;
@@ -18,9 +16,8 @@ penteBoard::penteBoard()
 	}
 }
 
-penteBoard::penteBoard(int variant, bool pro)
+penteBoard::penteBoard(int variant, bool pro) : isPro(pro)
 {
-	isPro = pro;
 	if (variant == REGULARPENTE || variant == KERYOPENTE) {
 		penteVariant = variant;
 	}
@@ -34,20 +31,12 @@ penteBoard::penteBoard(int variant, bool pro)
 	}
 }
 
-penteBoard::penteBoard(const penteBoard& original)
+penteBoard::penteBoard(const penteBoard& original) :isPro(original.isPro), penteVariant(original.penteVariant), minMoves(original.minMoves), 
+	takesForWhite(original.takesForWhite), takesForBlack(original.takesForBlack), winner(original.winner), isAgainstAI(original.isAgainstAI),
+	isAIWhite(original.isAIWhite), isWhiteTurn(original.isWhiteTurn), gameWon(original.gameWon)
 {
-	isPro = original.isPro;
-	penteVariant = original.penteVariant;
 	moveHistory = original.moveHistory;
-	minMoves = original.minMoves;
-	takesForWhite = original.takesForWhite;
-	takesForBlack = original.takesForBlack;
-	winner = original.winner;
 	AIInstance = original.AIInstance;
-	isAgainstAI = original.isAgainstAI;
-	isAIWhite = original.isAIWhite;
-	isWhiteTurn = original.isWhiteTurn;
-	gameWon = original.gameWon;
 	for (int i = 0; i < BOARDSIZE; ++i) {
 		for (int j = 0; j < BOARDSIZE; ++j) {
 			board[i][j] = original.board[i][j];
@@ -99,6 +88,7 @@ void penteBoard::savePenteBoard(bool autosave)
 	if (!ofs.is_open()) {
 		cout << "Nie udalo sie zapisac pliku gry." << endl;
 		system("pause");
+		return;
 	}
 	ofs << isPro << " " << penteVariant << " " << takesForWhite << " " << takesForBlack << " " << isWhiteTurn << " " << moveHistory.size() << endl;;
 	for (int i = 0; i < BOARDSIZE; ++i) {
@@ -296,7 +286,7 @@ void penteBoard::displayCredits()
 void penteBoard::unmakeMove()
 {
 	if (moveHistory.size() == 0 || (signed)moveHistory.size() <= minMoves) {
-		cout << "brak ruchów do cofania" << endl;
+		cout << "brak ruchow do cofania" << endl;
 		return;
 	}
 	board[moveHistory.back().front().y][moveHistory.back().front().x] = EMPTY;
@@ -337,7 +327,7 @@ void UTF8Pente::printBoardToConsole()
 				break;
 			case WHITE:
 				printf("%s", WHITECOLOUR);
-				printf("%s", "\xE2\x80\xA2");
+				printf("%s", "\xE2\x80\xA2"); //kod znaku kropka, poniewa¿ w C++11 nie mo¿na oznaczyæ stringa u8"jakiœ string"
 				break;
 			case BLACK:
 				printf("%s", REDCOLOUR);

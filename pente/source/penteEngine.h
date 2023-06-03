@@ -11,7 +11,6 @@
 class computerPlayer {
 private:
 public:
-	static computerPlayer* currentInstance;
 	virtual coordinates findBestMove(penteBoard *currentBoard, bool whiteTurn);
 	array<vector<coordinates>, 16> getAllGoodMoves(penteBoard *currentBoard, bool whiteTurn);
 	coordinates generateFirstMoves(penteBoard *currentBoard, bool whiteTurn);
@@ -60,5 +59,3 @@ public:
 };
 
 computerPlayer* generateAIInstance(int difficulty); 
-bitset<730> boardHash(penteBoard *boardToHash);
-void unhashBoard(bitset<730> hash);

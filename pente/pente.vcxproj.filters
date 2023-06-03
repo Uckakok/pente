@@ -60,6 +60,9 @@
     <ClCompile Include="source\game.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="source\networking.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\vendor\stb_image\stb_image.h">
@@ -953,6 +956,9 @@
     <ClInclude Include="source\game.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+    <ClInclude Include="source\networking.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\basic.shader" />
@@ -1364,5 +1370,6 @@
     <None Include="source\vendor\glm\gtx\wrap.inl">
       <Filter>Pliki nagłówkowe</Filter>
     </None>
+    <None Include="diagramKlas.cd" />
   </ItemGroup>
 </Project>

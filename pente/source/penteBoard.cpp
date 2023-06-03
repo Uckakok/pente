@@ -7,6 +7,26 @@
 #include<filesystem>
 #include<iterator>
 
+//tworzy planszê typu ASCIIPente lub UTF8Pente w zale¿noœci od ustawieñ
+penteBoard* createBoard(settings *currentSettings) {
+	penteBoard *currentGame;
+	if (currentSettings->prefferedConsole == ASCIICONSOLE) {
+		currentGame = new ASCIIPente();
+	}
+	else {
+		currentGame = new UTF8Pente();
+	}
+	return currentGame;
+}
+
+//inicjuje planszê obecnymi ustawieniami dopisuj¹c wariant pente i czy jest pro
+void initalizeBoard(settings *currentSettings, penteBoard* currentBoard) {
+	currentBoard->isPro = currentSettings->isPro;
+	currentBoard->penteVariant = currentSettings->prefferedPenteVersion;
+}
+
+
+//podstawowa inicjalizacja planszy
 penteBoard::penteBoard() : isPro(false), penteVariant(REGULARPENTE)
 {
 	for (int i = 0; i < BOARDSIZE; ++i) {
@@ -16,6 +36,7 @@ penteBoard::penteBoard() : isPro(false), penteVariant(REGULARPENTE)
 	}
 }
 
+//inicjalizacja planszy z pobraniem ustawieñ
 penteBoard::penteBoard(int variant, bool pro) : isPro(pro)
 {
 	if (variant == REGULARPENTE || variant == KERYOPENTE) {
@@ -31,6 +52,7 @@ penteBoard::penteBoard(int variant, bool pro) : isPro(pro)
 	}
 }
 
+//inicjalizacja planszy poprzez przepisanie wartoœci z innej planszy
 penteBoard::penteBoard(const penteBoard& original) :isPro(original.isPro), penteVariant(original.penteVariant), minMoves(original.minMoves), 
 	takesForWhite(original.takesForWhite), takesForBlack(original.takesForBlack), winner(original.winner), isAgainstAI(original.isAgainstAI),
 	isAIWhite(original.isAIWhite), isWhiteTurn(original.isWhiteTurn), gameWon(original.gameWon)
@@ -44,6 +66,7 @@ penteBoard::penteBoard(const penteBoard& original) :isPro(original.isPro), pente
 	}
 }
 
+//inicjalizowanie planszy poprzez wczytywanie z pliku
 penteBoard::penteBoard(string pathToLoad)
 {
 	if (pathToLoad.length() <= 4 || pathToLoad.substr(pathToLoad.length() - 4, pathToLoad.length()) != ".pnt") {
@@ -64,7 +87,27 @@ penteBoard::penteBoard(string pathToLoad)
 				gameHandle >> board[i][j];
 			}
 		}
-
+		//sprawdzanie poprawnoœci danych.
+		bool okData = true;
+		if (penteVariant != KERYOPENTE && penteVariant != REGULARPENTE) {
+			okData = false;
+		}
+		if (takesForWhite < 0 || takesForBlack < 0) {
+			okData = false;
+		}
+		if (minMoves < 0) {
+			okData = false;
+		}
+		for (int i = 0; i < BOARDSIZE; ++i) {
+			for (int j = 0; j < BOARDSIZE; ++j) {
+				if (board[i][j] != EMPTY && board[i][j] != BLACK && board[i][j] != WHITE) {
+					okData = false;
+				}
+			}
+		}
+		if (!okData) {
+			penteVariant = -1;
+		}
 	}
 	else {
 		penteVariant = -1;
@@ -72,6 +115,7 @@ penteBoard::penteBoard(string pathToLoad)
 	gameHandle.close();
 }
 
+//zapsuje grê na dysku
 void penteBoard::savePenteBoard(bool autosave)
 {
 	bool success = true;

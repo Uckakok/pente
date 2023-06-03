@@ -2,9 +2,9 @@
 
 #include"declarations.h"
 #include<vector>
+#include"settings.h"
 
 class computerPlayer;
-class advancedComputer;
 
 using namespace std;
 
@@ -13,6 +13,8 @@ private:
 	vector<vector<coordinates>> moveHistory;
 	int minMoves = 0;
 public:
+	bool online = false;
+	bool isHost = false;
 	int takesForWhite = 0;
 	int takesForBlack = 0;
 	int winner = -1;
@@ -26,7 +28,6 @@ public:
 	int board[BOARDSIZE][BOARDSIZE];
 
 	penteBoard();
-	//wczytywanie zaklada, ¿e plik zawsze jest poprawny
 	explicit penteBoard(string pathToLoad);
 	penteBoard(int variant, bool pro);
 	penteBoard(const penteBoard& original);
@@ -46,6 +47,7 @@ public:
 	void printBoardToConsole() override;
 	UTF8Pente(string pathToLoad) : penteBoard(pathToLoad) {}
 	UTF8Pente() : penteBoard() {}
+	UTF8Pente(const penteBoard& original) : penteBoard(original) {};
 };
 
 class ASCIIPente : public penteBoard {
@@ -53,4 +55,8 @@ public:
 	void printBoardToConsole() override;
 	ASCIIPente(string pathToLoad) : penteBoard(pathToLoad) {}
 	ASCIIPente() : penteBoard() {}
+	ASCIIPente(const penteBoard& original) : penteBoard(original) {};
 };
+
+void initalizeBoard(settings *currentSettings, penteBoard* currentBoard);
+penteBoard* createBoard(settings *currentSettings);

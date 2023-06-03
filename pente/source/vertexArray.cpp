@@ -13,6 +13,7 @@ vertexArray::~vertexArray()
 	GLCall(glDeleteVertexArrays(1, &m_RendererID));
 }
 
+// Metoda dodaj¹ca bufor wierzcho³ków do tablicy wierzcho³ków
 void vertexArray::addBuffer(const vertexBuffer & vb, const vertexBufferLayout & layout)
 {
 	bind();

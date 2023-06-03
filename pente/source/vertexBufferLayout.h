@@ -4,6 +4,7 @@
 #include<GL/glew.h>
 #include"Renderer.h"
 
+// Struktura definiuj¹ca element bufora wierzcho³ków
 struct vertexBufferElement {
 	unsigned int type;
 
@@ -22,10 +23,11 @@ struct vertexBufferElement {
 	}
 };
 
+// Klasa definiuj¹ca uk³ad bufora wierzcho³ków
 class vertexBufferLayout {
 private:
 	std::vector<vertexBufferElement> m_Elements;
-	unsigned int m_Stride;
+	unsigned int m_Stride; //odleg³oœæ pomiêdzy kolejnymi wierzcho³kami
 public:
 	vertexBufferLayout()
 		: m_Stride(0) {}

@@ -1,6 +1,7 @@
 #include"Renderer.h"
 #include<iostream>
 
+//usuwanie b³êdów openGL
 void GLClearError() {
 	for (int i = 0; i < GLAD_GET_ERROR_MAX; ++i) {
 		while (glGetError() == GL_NO_ERROR)
@@ -8,6 +9,7 @@ void GLClearError() {
 	}
 }
 
+//wypisuje wszystkie b³êdy openGL
 bool GLLogCall(const char* function, const char* file, int line) {
 	while (GLenum error = glGetError()) {
 		std::cout << "[Blad OpenGL] (" << error << "): " << function << " " << file << ":" << line << std::endl;

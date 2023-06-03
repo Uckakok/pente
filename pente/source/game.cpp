@@ -5,11 +5,13 @@
 #include"declarations.h"
 #include<conio.h>
 #include"game.h"
-#include <bitset>
 #include<Windows.h>
+#include"networking.h"
+
 
 using namespace std;
 
+//w trybie konsolowym opcje gry
 coordinates gameChoices(settings *currentSettings) {
 	bool success = false;
 	char answer[4] = "";
@@ -59,6 +61,9 @@ coordinates gameChoices(settings *currentSettings) {
 				}
 			}
 		}
+		while (getchar() != '\n') {
+			;
+		}
 	} while (!success);
 	returnValue.y = BOARDSIZE - coord2;
 	returnValue.x = coord1 - 1;
@@ -83,9 +88,8 @@ void printPenteRules() {
 	return;
 }
 
-
+//wypisuje wszystkie pliki z rozszerzeniem .pnt w obecnym katalogu
 void listSavesInWorkingDirectory() {
-	
 	vector<string> entries;
 	WIN32_FIND_DATA findData;
 	HANDLE hFind = INVALID_HANDLE_VALUE;
@@ -116,15 +120,32 @@ int mainMenu() {
 		cout << "1 - rozpocznij nowa gre hot seat" << endl;
 		cout << "2 - rozpocznij nowa gre vs komputer" << endl;
 		cout << "3 - wczytaj gre" << endl;
-		cout << "4 - ustawienia" << endl;
-		cout << "5 - wyswielt zasady pente" << endl;
-		cout << "6 - wyjscie z programu" << endl;
+		cout << "4 - gra online" << endl;
+		cout << "5 - ustawienia" << endl;
+		cout << "6 - wyswielt zasady pente" << endl;
+		cout << "7 - wyjscie z programu" << endl;
 		char choice = _getch();
 		choice -= '0';
-		if (choice >= 1 && choice <= 6) return choice;
+		if (choice >= 1 && choice <= 7) return choice;
 	} while (true);
 }
 
+int onlineMenu() {
+	do {
+		system("cls");
+		cout << "1 - hostuj gre LAN." << endl;
+		cout << "2 - dolacz do gry LAN." << endl;
+		cout << "3 - powrot" << endl;
+		cout << endl << endl << endl << "Funkcja eksperymentalna. Gracz bedacy zawsze zaczyna grajac czarnymi i program slabo obsluguje bledy w ";
+		cout << "polaczeniu, wiec w przypadku utraty polaczenia gra bedzie wiecznie czekala na odpowiedz drugiej strony. W takim wypadku trzeba gre wylaczyc ";
+		cout << "i uruchomic ponownie." << endl;
+		char choice = _getch();
+		choice -= '0';
+		if (choice >= 1 && choice <= 3) return choice;
+	} while (true);
+}
+
+//tworzy wektor ze wszystkimi bierkami na planszy, by okno mog³o je narysowaæ
 vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
 	vector<pieceToDraw> allPieces;
 	for (int i = 0; i < BOARDSIZE; ++i) {
@@ -146,8 +167,143 @@ vector<pieceToDraw> getAllPieces(penteBoard *currentGame) {
 	return allPieces;
 }
 
+//zwracane wartosc 0 -ruch wykonany, 1 - kontynuuj gre, 2 - wyjscie z gry, 3 - koniec gry
+int handleGameEvents(coordinates nextMove, penteBoard *currentGame, settings *currentSettings, graphicalInterface*& window) {
+	vector<pieceToDraw> allPieces;
+	if (nextMove.x == -6) {
+		return 1;
+	}
 
-void gameLoop(penteBoard *currentGame, settings *currentSettings) {
+	if (!currentSettings->graphical) {
+		switch (nextMove.x) {
+		case -1:
+			currentGame->savePenteBoard();
+			return 1;
+		case -2:
+			if (currentSettings->autosaveOnExit) {
+				currentGame->savePenteBoard(true);
+			}
+			delete currentGame;
+			return 2;
+		case -3:
+			if (currentSettings->autosaveOnExit) {
+				currentGame->savePenteBoard(true);
+			}
+			delete currentGame;
+			delete currentSettings;
+			exit(EXIT_SUCCESS);
+		case -4:
+			currentSettings->graphical = true;
+			window = new graphicalInterface();
+			window->blendEnable();
+			window->prepareVertexArray();
+			window->prepareVertexBuffer();
+			window->prepareShaders();
+			window->unbindStuff();
+			window->setupCallbacks();
+			window->setupMatrices();
+			allPieces = getAllPieces(currentGame);
+			window->newPiecesToDraw(allPieces);
+			window->windowUpdate();
+			return 1;
+		case -5:
+			if (currentGame->online) {
+				cout << "Cofanie ruchow niejest mozliwe w grze online." << endl;
+				return 1;
+			}
+			if (currentSettings->allowUndo) {
+				if (currentGame->isAgainstAI) {
+					currentGame->unmakeMove();
+				}
+				currentGame->unmakeMove();
+			}
+			return 1;
+		default:
+			if (!currentGame->makeMove(nextMove.x, nextMove.y)) {
+				currentGame->printBoardToConsole();
+				return 1;
+			}
+		}
+		currentGame->printBoardToConsole();
+		cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
+		cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
+		if (currentGame->checkIfBoardFull()) {
+			cout << "Plansza zostala zapelniona! remis." << endl;
+			system("pause");
+			delete currentGame;
+			return 3;
+		}
+		else if (currentGame->gameWon) {
+			currentGame->displayCredits();
+			system("pause");
+			delete currentGame;
+			return 3;
+		}
+		else {
+			return 0;
+		}
+	}
+	else {
+		switch (nextMove.x) {
+		case -1:
+			return 1;
+		case -2:
+			currentSettings->graphical = false;
+			window->resetPosition();
+			window->closeWindow();
+			currentGame->printBoardToConsole();
+			delete window;
+			return 1;
+		default:
+			if (!currentGame->makeMove(nextMove.x, nextMove.y)) {
+				currentGame->printBoardToConsole();
+				return 1;
+			}
+			window->resetPosition();
+			allPieces = getAllPieces(currentGame);
+			window->newPiecesToDraw(allPieces);
+			window->windowUpdate();
+			currentGame->printBoardToConsole();
+			cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
+			cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
+		}
+		if (currentGame->checkIfBoardFull()) {
+			cout << "Plansza zostala zapelniona! remis." << endl;
+			allPieces = getAllPieces(currentGame);
+			window->newPiecesToDraw(allPieces);
+			window->windowUpdate();
+			MessageBox(NULL, "Gra zakonczona!", "Pente!", MB_ICONINFORMATION | MB_OK);
+			while (true) {
+				if (window->shouldCloseWindow()) break;
+				window->windowUpdate();
+			}
+			window->closeWindow();
+			system("pause");
+			delete currentGame;
+			return 3;
+		}
+		else if (currentGame->gameWon) {
+			allPieces = getAllPieces(currentGame);
+			window->newPiecesToDraw(allPieces);
+			window->windowUpdate();
+			currentGame->displayCredits();
+			MessageBox(NULL, "Gra zakonczona!", "Pente!", MB_ICONINFORMATION | MB_OK);
+			while (true) {
+				if (window->shouldCloseWindow()) break;
+				window->windowUpdate();
+			}
+			window->closeWindow();
+			system("pause");
+			delete currentGame;
+			return 3;
+		}
+		else {
+			return 0;
+		}
+	}
+}
+
+void gameLoop(penteBoard *currentGame, settings *currentSettings, SOCKET enemySocket) {
 	currentGame->AIInstance = generateAIInstance(currentSettings->AIDifficulty);
 	graphicalInterface *window = NULL;
 	if (!currentSettings->graphical) {
@@ -163,160 +319,131 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings) {
 		window->setupCallbacks();
 		window->setupMatrices();
 	}
-	vector<pieceToDraw> allPieces;
+	currentGame->printBoardToConsole();
 	while (true) {
+		int eventAnswer = -1;
 		coordinates nextMove;
 		if (currentGame->isAgainstAI && currentGame->isAIWhite == currentGame->isWhiteTurn) {
 			nextMove = currentGame->AIInstance->findBestMove(currentGame, currentGame->isWhiteTurn);
 			cout << "Ruch AI: " << (char)(nextMove.x + 97) << BOARDSIZE - (nextMove.y) << endl;
 			currentGame->gameWon = false;
 			currentGame->winner = -1;
+			eventAnswer = handleGameEvents(nextMove, currentGame, currentSettings, window);
+			switch (eventAnswer) {
+			case 0:
+				break;
+			case 1:
+				break;
+			case 2:
+				return;
+			case 3:
+				return;
+			}
 		}
 		else {
-			if (!currentSettings->graphical) {
-				nextMove = gameChoices(currentSettings);
+			if (currentGame->online) {
+				if ((currentGame->isHost && !currentGame->isWhiteTurn) || (!currentGame->isHost && currentGame->isWhiteTurn)) {
+					do {
+						nextMove = getNextMove(currentSettings, window, currentGame);
+					} while (nextMove.x == -6);
+					eventAnswer = handleGameEvents(nextMove, currentGame, currentSettings, window);
+					switch (eventAnswer) {
+					case 0:
+						if (send(enemySocket, (char*)&nextMove, sizeof(nextMove), 0) <= 0) {
+							cout << "Blad przy przesylaniu ruchu do przeciwnika." << endl;
+							system("pause");
+							return;
+						}
+						break;
+					case 1:
+						break;
+					case 2:
+						nextMove.x = -1;
+						if (send(enemySocket, (char*)&nextMove, sizeof(nextMove), 0) <= 0) {
+							cout << "Blad przy wysylaniu przeciwnikowi informacji o koncu gry." << endl;
+							system("pause");
+							return;
+						}
+						cout << "Wychodzenie z gry..." << endl;
+						system("pause");
+						return;
+					case 3:
+						if (send(enemySocket, (char*)&nextMove, sizeof(nextMove), 0) <= 0) {
+							cout << "Blad przy wysylaniu ruchu przeciwnikowi." << endl;
+							system("pause");
+							return;
+						}
+						return;
+					}
+				}
+				else {
+					int recvReturn;
+					while ((recvReturn = recv(enemySocket, (char*)&nextMove, sizeof(nextMove), 0)) <= 0) {
+						if (currentSettings->graphical) {
+							window->windowUpdate();
+						}
+					}
+					if (nextMove.x == -1) {
+						cout << "Przeciwnik rozlaczyl sie z gry." << endl;
+						system("pause");
+						return;
+					}
+					eventAnswer = handleGameEvents(nextMove, currentGame, currentSettings, window);
+					switch (eventAnswer) {
+					case 0:
+						break;
+					case 1:
+						cout << "Nastapila desynchronizacja klienta i hosta. Wychodzenie z gry..." << endl;
+						system("pause");
+						return;
+					case 2:
+						cout << "Gra zostala zakonczona!" << endl;
+						system("pause");
+						return;
+					case 3:
+						cout << "Gra zostala zakonczona!" << endl;
+						system("pause");
+						return;
+					}
+				}
 			}
 			else {
-				allPieces = getAllPieces(currentGame);
-				window->newPiecesToDraw(allPieces);
-				window->windowUpdate();
-				nextMove = fetchPosition();
-			}
-		}
-		if (!currentSettings->graphical) {
-			switch (nextMove.x) {
-			case -1:
-				currentGame->savePenteBoard();
-				break;
-			case -2:
-				if (currentSettings->autosaveOnExit) {
-					currentGame->savePenteBoard(true);
+				nextMove = getNextMove(currentSettings, window, currentGame);
+				eventAnswer = handleGameEvents(nextMove, currentGame, currentSettings, window);
+				switch (eventAnswer) {
+				case 0:
+					break;
+				case 1:
+					break;
+				case 2:
+					return;
+				case 3:
+					return;
 				}
-				delete currentGame;
-				return;
-			case -3:
-				if (currentSettings->autosaveOnExit) {
-					currentGame->savePenteBoard(true);
-				}
-				delete currentGame;
-				delete currentSettings;
-				exit(EXIT_SUCCESS);
-			case -4:
-				currentSettings->graphical = true;
-				window = new graphicalInterface();
-				window->blendEnable();
-				window->prepareVertexArray();
-				window->prepareVertexBuffer();
-				window->prepareShaders();
-				window->unbindStuff();
-				window->setupCallbacks();
-				window->setupMatrices();
-				allPieces = getAllPieces(currentGame);
-				window->newPiecesToDraw(allPieces);
-				window->windowUpdate();
-				break;
-			case -5:
-				if (currentSettings->allowUndo) {
-					if (currentGame->isAgainstAI){
-						currentGame->unmakeMove();
-					}
-					currentGame->unmakeMove();
-				}
-				break;
-			default:
-				currentGame->makeMove(nextMove.x, nextMove.y);
-			}
-			currentGame->printBoardToConsole();
-			cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
-			cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
-			if (currentGame->checkIfBoardFull()) {
-				cout << "Plansza zostala zapelniona! remis." << endl;
-				system("pause");
-				delete currentGame;
-				return;
-			}
-			if (currentGame->checkIfBoardFull()) {
-				cout << "Plansza zostala zapelniona! remis." << endl;
-				system("pause");
-				delete currentGame;
-				return;
-			}
-			if (currentGame->gameWon) {
-				currentGame->displayCredits();
-				system("pause");
-				delete currentGame;
-				break;
-			}
-		}
-		else {
-			switch (nextMove.x) {
-			case -1:
-				break;
-			case -2:
-				currentSettings->graphical = false;
-				window->resetPosition();
-				window->closeWindow();
-				delete window;
-				break;
-			default:
-				currentGame->makeMove(nextMove.x, nextMove.y);
-				window->resetPosition();
-				allPieces = getAllPieces(currentGame);
-				window->newPiecesToDraw(allPieces);
-				window->windowUpdate();
-				currentGame->printBoardToConsole();
-				cout << "Zbicia dla gracza bialego: " << currentGame->takesForWhite << endl;
-				cout << "Zbicia dla gracza czarnego: " << currentGame->takesForBlack << endl;
-			}
-			if (currentGame->checkIfBoardFull()) {
-				cout << "Plansza zostala zapelniona! remis." << endl;
-				allPieces = getAllPieces(currentGame);
-				window->newPiecesToDraw(allPieces);
-				window->windowUpdate();
-				MessageBox(NULL, "Gra zakonczona!", "Pente!", MB_ICONINFORMATION | MB_OK);
-				while (true) {
-					if (window->shouldCloseWindow()) break;
-					window->windowUpdate();
-				}
-				window->closeWindow();
-				system("pause");
-				delete currentGame;
-				return;
-			}
-			if (currentGame->gameWon) {
-				allPieces = getAllPieces(currentGame);
-				window->newPiecesToDraw(allPieces);
-				window->windowUpdate();
-				currentGame->displayCredits();
-				MessageBox(NULL, "Gra zakonczona!", "Pente!", MB_ICONINFORMATION | MB_OK);
-				while (true) {
-					if (window->shouldCloseWindow()) break;
-					window->windowUpdate();
-				}
-				window->closeWindow();
-				system("pause");
-				delete currentGame;
-				break;
 			}
 		}
 	}
 }
 
-penteBoard* createBoard(settings *currentSettings) {
-	penteBoard *currentGame;
-	if (currentSettings->prefferedConsole == ASCIICONSOLE) {
-		currentGame = new ASCIIPente();
+coordinates getNextMove(settings *currentSettings, graphicalInterface *window, penteBoard *currentGame) {
+	coordinates nextMove;
+	vector<pieceToDraw> allPieces;
+	if (!currentSettings->graphical) {
+		nextMove = gameChoices(currentSettings);
 	}
 	else {
-		currentGame = new UTF8Pente();
+		allPieces = getAllPieces(currentGame);
+		window->newPiecesToDraw(allPieces);
+		window->windowUpdate();
+		nextMove = fetchPosition();
+		window->resetPosition();
+		if (nextMove.x == -1) {
+			nextMove.x = -6;
+		}
 	}
-	return currentGame;
+	return nextMove;
 }
 
-void initalizeBoard(settings *currentSettings, penteBoard* currentBoard) {
-	currentBoard->isPro = currentSettings->isPro;
-	currentBoard->penteVariant = currentSettings->prefferedPenteVersion;
-}
 
 int startGame() {
 	srand((unsigned)time(NULL));
@@ -329,7 +456,7 @@ int startGame() {
 		case 1:
 			currentGame = createBoard(currentSettings);
 			initalizeBoard(currentSettings, currentGame);
-			gameLoop(currentGame, currentSettings);
+			gameLoop(currentGame, currentSettings, NULL);
 			break;
 		case 2: {
 			char playerColour;
@@ -340,14 +467,14 @@ int startGame() {
 				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = false;
 				currentGame->isAgainstAI = true;
-				gameLoop(currentGame, currentSettings);
+				gameLoop(currentGame, currentSettings, NULL);
 			}
 			else if (playerColour == 'c') {
 				currentGame = createBoard(currentSettings);
 				initalizeBoard(currentSettings, currentGame);
 				currentGame->isAIWhite = true;
 				currentGame->isAgainstAI = true;
-				gameLoop(currentGame, currentSettings);
+				gameLoop(currentGame, currentSettings, NULL);
 			}
 			break; }
 		case 3: {
@@ -373,7 +500,7 @@ int startGame() {
 			gameEnemy = _getch();
 			if (gameEnemy == 'h') {
 				cout << endl << "Aktualnie ruch gracza: " << (currentGame->isWhiteTurn ? "bialy" : "czarny") << endl;
-				gameLoop(currentGame, currentSettings);
+				gameLoop(currentGame, currentSettings, NULL);
 			}
 			else if (gameEnemy == 'a') {
 				char playerColour;
@@ -382,12 +509,12 @@ int startGame() {
 				if (playerColour == 'b') {
 					currentGame->isAIWhite = false;
 					currentGame->isAgainstAI = true;
-					gameLoop(currentGame, currentSettings);
+					gameLoop(currentGame, currentSettings, NULL);
 				}
 				else if (playerColour == 'c') {
 					currentGame->isAIWhite = true;
 					currentGame->isAgainstAI = true;
-					gameLoop(currentGame, currentSettings);
+					gameLoop(currentGame, currentSettings, NULL);
 				}
 				else {
 					cout << "Niepoprawne dane" << endl;
@@ -398,16 +525,46 @@ int startGame() {
 			}
 			break; }
 		case 4:
+		{
+			int onlineChoice = onlineMenu();
+			switch (onlineChoice) {
+			case 1: {
+				currentGame = new penteBoard(); //inicjalizowanie by kompilator nie narzeka³
+				SOCKET clientSocket = INVALID_SOCKET;
+				SOCKET serverSocket = INVALID_SOCKET;
+				if (runHost(currentGame, currentSettings, &serverSocket, &clientSocket)) {
+					gameLoop(currentGame, currentSettings, clientSocket);
+				}
+				closesocket(serverSocket);
+				closesocket(clientSocket);
+				WSACleanup();
+				break; 
+			}
+			case 2: {
+				currentGame = new penteBoard(); //inicjalizowanie by kompilator nie narzeka³
+				SOCKET clientSocket = INVALID_SOCKET;
+				if (runClient(currentGame, currentSettings, &clientSocket)) {
+					gameLoop(currentGame, currentSettings, clientSocket);
+				}
+				closesocket(clientSocket);
+				WSACleanup();
+				break;
+			}
+			case 3:
+				break;
+			}
+			break;
+		}
+		case 5:
 			currentSettings->changeSettings();
 			break;
-		case 5:
+		case 6:
 			printPenteRules();
 			break;
-		case 6:
+		case 7:
 			cout << "dziekuje za gre!" << endl;
 			system("pause");
 			exit(EXIT_SUCCESS);
-			break;
 		}
 	}
 }

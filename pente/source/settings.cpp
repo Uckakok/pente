@@ -1,166 +1,103 @@
 #include "settings.h"
 #include"declarations.h"
-#include"settings.h"
 #include<iostream>
 #include<fstream>
 #include<string>
 #include <iomanip>
 #include<stdio.h>
 #include <conio.h>
+#include<sstream>
 
 using namespace std;
 
 
-settings::settings() : prefferedConsole(UTF8CONSOLE), prefferedPenteVersion(REGULARPENTE), autosaveOnExit(true), isPro(false), graphical(false),
-allowUndo(false), AIDifficulty(2)
+settings::settings() : prefferedConsole(UTF8CONSOLE), prefferedPenteVersion(REGULARPENTE), autosaveOnExit(true), isPro(false), graphical(false), allowUndo(false), AIDifficulty(2)
 {
-	ifstream settingsHandle;
-	bool possibleToRead = true;
-	string version;
-	int versionInt;
-	int consoleInt;
-	bool graphicalBool;
-	bool proBool;
-	bool autosaveBool;
-	bool undoBool;
-	int AIInt;
-	settingsHandle.open("settings.txt");
+	ifstream settingsHandle("settings.txt");
 	if (settingsHandle.is_open()) {
-		string console;
-		string autosave;
-		string pro;
-		string undo;
-		string graphicalStr;
-		string word;
+		string line;
+		bool validSettings = true;  //flaga, notuj¹ca czy ustawienia s¹ poprawne
 
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
+		while (getline(settingsHandle, line)) {
+			istringstream iss(line);
+			string key, value;
+			if (iss >> key >> value) {
+				if (key == "penteVersion:") {
+					if (value == "regularPente") {
+						prefferedPenteVersion = REGULARPENTE;
+					}
+					else if (value == "keryoPente") {
+						prefferedPenteVersion = KERYOPENTE;
+					}
+					else {
+						validSettings = false;  // nieprawidlowa wartosc
+						break;
+					}
+				}
+				else if (key == "console:") {
+					if (value == "ASCII") {
+						prefferedConsole = ASCIICONSOLE;
+					}
+					else if (value == "UTF8") {
+						prefferedConsole = UTF8CONSOLE;
+					}
+					else {
+						validSettings = false;  // Nieprawid³owa wartoœæ
+						break;
+					}
+				}
+				else if (key == "autosave:") {
+					autosaveOnExit = (value == "true");
+				}
+				else if (key == "pro:") {
+					isPro = (value == "true");
+				}
+				else if (key == "graphical:") {
+					graphical = (value == "true");
+				}
+				else if (key == "undo:") {
+					allowUndo = (value == "true");
+				}
+				else if (key == "AI:") {
+					try {
+						AIDifficulty = stoi(value);
+					}
+					catch (const std::invalid_argument&) {
+						validSettings = false;  //Nieprawid³owa wartoœæ
+						break;
+					}
+				}
+				else {
+					validSettings = false;  // nierozpoznana sekcja ustawieñ
+					break;
+				}
+			}
+			else {
+				validSettings = false;  
+				break;
+			}
 		}
-		if (word != "penteVersion:") {
-			possibleToRead = false;
+
+		if (!validSettings) {
+			prefferedConsole = UTF8CONSOLE;
+			prefferedPenteVersion = REGULARPENTE;
+			autosaveOnExit = true; 
+			isPro = false;
+			graphical = false;
+			allowUndo = false;
+			AIDifficulty = 2;
 		}
-		if (!(settingsHandle >> version)) {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
-		}
-		if (word != "console:") {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> console)) {
-			possibleToRead = false;
-		}
-		if (version == "regularPente") {
-			versionInt = REGULARPENTE;
-		}
-		else if (version == "keryoPente") {
-			versionInt = KERYOPENTE;
-		}
-		else {
-			possibleToRead = false;
-		}
-		if (console == "ASCII") {
-			consoleInt = ASCIICONSOLE;
-		}
-		else if (console == "UTF8") {
-			consoleInt = UTF8CONSOLE;
-		}
-		else {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
-		}
-		if (word != "autosave:") {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> autosave)) {
-			possibleToRead = false;
-		}
-		if (autosave == "true") {
-			autosaveBool = true;
-		}
-		else if (autosave == "false") {
-			autosaveBool = false;
-		}
-		else {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
-		}
-		if (word != "pro:") {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> pro)) {
-			possibleToRead = false;
-		}
-		if (pro == "true") {
-			proBool = true;
-		}
-		else if (pro == "false") {
-			proBool = false;
-		}
-		else {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
-		}
-		if (word != "graphical:") {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> graphicalStr)) {
-			possibleToRead = false;
-		}
-		if (graphicalStr == "true") {
-			graphicalBool = true;;
-		}
-		else if (graphicalStr == "false") {
-			graphicalBool = false;
-		}
-		else {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
-		}
-		if (word != "undo:") {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> undo)) {
-			possibleToRead = false;
-		}
-		if (undo == "true") {
-			undoBool = true;;
-		}
-		else if (undo == "false") {
-			undoBool = false;
-		}
-		else {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> word)) {
-			possibleToRead = false;
-		}
-		if (word != "AI:") {
-			possibleToRead = false;
-		}
-		if (!(settingsHandle >> AIInt)) {
-			possibleToRead = false;
-		}
+
 		settingsHandle.close();
-		if (possibleToRead) {
-			prefferedConsole = consoleInt;
-			prefferedPenteVersion = versionInt;
-			autosaveOnExit = autosaveBool;
-			isPro = proBool;
-			graphical = graphicalBool;
-			allowUndo = undoBool;
-			AIDifficulty = AIInt;
-			return;
-		}
+	}
+	else {
+		prefferedConsole = UTF8CONSOLE;
+		prefferedPenteVersion = REGULARPENTE;
+		autosaveOnExit = true;
+		isPro = false;
+		graphical = false;
+		allowUndo = false;
+		AIDifficulty = 2;
 	}
 }
 

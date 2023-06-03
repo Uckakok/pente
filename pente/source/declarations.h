@@ -9,7 +9,7 @@
 #define ASCIICONSOLE	0
 #define	UTF8CONSOLE	1
 
-
+#define PENTEPORT	62380
 
 #define MAXSTRING	1024
 #define WHITECOLOUR	"\033[0;37m"

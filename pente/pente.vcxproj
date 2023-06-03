@@ -150,6 +150,7 @@
     <ClCompile Include="source\game.cpp" />
     <ClCompile Include="source\graphicalMode.cpp" />
     <ClCompile Include="source\indexBuffer.cpp" />
+    <ClCompile Include="source\networking.cpp" />
     <ClCompile Include="source\penteBoard.cpp" />
     <ClCompile Include="source\penteEngine.cpp" />
     <ClCompile Include="source\Renderer.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="source\game.h" />
     <ClInclude Include="source\graphicalMode.h" />
     <ClInclude Include="source\indexBuffer.h" />
+    <ClInclude Include="source\networking.h" />
     <ClInclude Include="source\penteBoard.h" />
     <ClInclude Include="source\penteEngine.h" />
     <ClInclude Include="source\Renderer.h" />
@@ -461,6 +463,7 @@
     <ClInclude Include="source\vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="diagramKlas.cd" />
     <None Include="resources\shaders\basic.shader" />
     <None Include="source\vendor\glm\detail\func_common.inl" />
     <None Include="source\vendor\glm\detail\func_common_simd.inl" />

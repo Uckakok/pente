@@ -6,25 +6,24 @@
 #include"Renderer.h"
 
 
-
+// Pobiera lokalizacjê (indeks) jednostki uniformu o podanej nazwie
 int Shader::getUniformLocation(const std::string & name)
 {
 	if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
 		return m_UniformLocationCache[name];
 	GLCall(int location = glGetUniformLocation(m_RendererID, name.c_str()));
 	if (location == -1)
-		std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+		std::cout << "Ostrzezenie: '" << name << "' nie istnieje!" << std::endl;
 	
 	m_UniformLocationCache[name] = location;
 	return location;
 }
 
+// Parsuje plik shadera i tworzy program shaderowy
 Shader::Shader(const std::string & filepath) : m_FilePath(filepath), m_RendererID(0)
 {
 	shaderProgramSource source = parseShader(filepath);
 	m_RendererID = createShader(source.vertexSource, source.fragmentSource);
-
-
 }
 
 Shader::~Shader()
@@ -52,6 +51,7 @@ void Shader::setUniformMat4f(const std::string & name, const glm::mat4& matrix)
 	GLCall(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
 }
 
+// Tworzy program shaderowy na podstawie Ÿróde³ shaderów
 unsigned int Shader::createShader(const std::string& vertexShader, const std::string& fragmentShader) {
 	GLCall(unsigned int program = glCreateProgram());
 	unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
@@ -68,6 +68,7 @@ unsigned int Shader::createShader(const std::string& vertexShader, const std::st
 
 }
 
+// Kompiluje shader o podanym typie i Ÿródle
 unsigned int Shader::compileShader(unsigned int type, const std::string& source) {
 	unsigned int id = glCreateShader(type);
 	const char* src = source.c_str();

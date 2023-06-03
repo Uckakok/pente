@@ -8,12 +8,10 @@
 #include<limits.h>
 #include<chrono>
 #include <functional>
-#include<unordered_map>
 
 atomic<int> analyzedPositions(0);
 
-//unordered_map<string, int> evaluationMap;
-
+//statycznie ocenia planszê i generuje wszystkie dobre ruchy
 array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * currentBoard, bool whiteTurn)
 {
 	//sprawdzenie czy mozna wygrac jednym ruchem (priorytet 0)
@@ -70,7 +68,7 @@ array<vector<coordinates>, 16> computerPlayer::getAllGoodMoves(penteBoard * curr
 	return allMovesWithPriorities;
 }
 
-
+//generuje pocz¹tkowe ruchy dla komputery
 coordinates computerPlayer::generateFirstMoves(penteBoard * currentBoard, bool whiteTurn)
 {
 	if (currentBoard->isPro) {
@@ -112,6 +110,7 @@ coordinates computerPlayer::generateFirstMoves(penteBoard * currentBoard, bool w
 	return { -1, -1 };
 }
 
+//ocenia jakoœæ pozycji dla pojedyñczego gracza sprawdzaj¹c wszystkie dostêpne dla niego ruchy
 int computerPlayer::evaluatePlayer(penteBoard *currentBoard, bool whiteTurn) {
 	int score = 0;
 	int scoreValues[] = { 100000, 50000, 5000,  5000, 600, 400, 400, 300, 200, 150, 50, 6000};
@@ -146,19 +145,13 @@ int computerPlayer::evaluatePlayer(penteBoard *currentBoard, bool whiteTurn) {
 	score += adjacent[3].size() * scoreValues[8];
 	score += adjacent[2].size() * scoreValues[9];
 
-	//dodanie aktualnie wykonanych bic
 
 	return score;
 }
 
+//przypisuje pozycji ocenê
 int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 {
-	/*string key = createHashKey(currentBoard);
-	auto it = evaluationMap.find(key);
-	if (it != evaluationMap.end()) {
-		return it->second;
-	}*/
-	
 	//dodatnie dla bia³ego, ujemne dla czarnego
 	if (currentBoard->gameWon) {
 		if (currentBoard->winner == WHITE) {
@@ -174,12 +167,11 @@ int computerPlayer::staticPositionEvaluation(penteBoard * currentBoard)
 	score -= evaluatePlayer(currentBoard, false);
 	int takings = currentBoard->takesForWhite - currentBoard->takesForBlack;
 	score += takings * 8000;
-	//evaluationMap[key] = score;
 	return score;
 }
 
 
-
+//algorytm minmax z zastosowaniem apha-beta pruning
 int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, int alpha, int beta, bool whiteTurn)
 {
 	if (depth <= 0 || currentBoard->gameWon) {
@@ -233,6 +225,7 @@ int computerPlayer::minMaxAlgorithm(penteBoard * currentBoard, int depth, int al
 	}
 }
 
+//generuje wszystkie pola s¹siaduj¹ce z chocia¿ jedn¹ bierk¹
 vector<coordinates> computerPlayer::generateMovesWorthChecking(penteBoard * currentBoard, bool whiteTurn)
 {
 	//tworzenie listy wektorów wszystkich pustych pól s¹siaduj¹cych z bierkami i ich przy³¹czanie do jednego wektora
@@ -256,6 +249,7 @@ vector<coordinates> computerPlayer::generateMovesWorthChecking(penteBoard * curr
 	return allMovesWithPriorities;
 }
 
+//sprawdza czy s¹ wyj¹tkowo istotne ruchy - wygranie w jednym ruchu, zablokowanie wygranej przeciwnika itp
 vector<coordinates> computerPlayer::forcedOrWinning(penteBoard * currentBoard, bool whiteTurn)
 {
 	//sprawdzenie czy mozna wygrac jednym ruchem (priorytet 0)
@@ -292,6 +286,8 @@ vector<coordinates> computerPlayer::forcedOrWinning(penteBoard * currentBoard, b
 	return winningMoves;
 }
 
+//generuje wszystkie pocz¹tkowe ruchy, kopiuje planszê tyle razy ile jest ruchów i w osobnym w¹tku odpala algorytm minmax dla ka¿dego dostêpnego pocz¹tkowego ruchu
+//takie podejœcie pozwala skutecznie wykorzystaæ wszystkie rdzenie komputera, by przyspieszyæ obliczenia.
 coordinates computerPlayer::prepareAndPerformMinMax(penteBoard * currentBoard, bool whiteTurn, int depth)
 {
 	using namespace chrono;
@@ -369,7 +365,7 @@ coordinates computerPlayer::prepareAndPerformMinMax(penteBoard * currentBoard, b
 }
 
 
-
+//losowe generowanie ruchów
 coordinates computerPlayer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	if (currentBoard->getMoveHistorySize() <= 2) {
@@ -382,6 +378,7 @@ coordinates computerPlayer::findBestMove(penteBoard * currentBoard, bool whiteTu
 	return moveToTest;
 }
 
+//generowanie ruchów przy pomocy statycznej ewaluacji
 coordinates mediumComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	if (currentBoard->getMoveHistorySize() <= 2) {
@@ -433,22 +430,25 @@ computerPlayer * generateAIInstance(int difficulty)
 	return instance;
 }
 
-
+//generuje ruch przy wykorzystanie algorytmu minmax z g³êbokoœci¹ 3
 coordinates expertComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	return prepareAndPerformMinMax(currentBoard, whiteTurn, 2);
 }
 
+//generuje ruch przy wykorzystanie algorytmu minmax z g³êbokoœci¹ 2
 coordinates advancedComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	return prepareAndPerformMinMax(currentBoard, whiteTurn, 1);
 }
 
+//generuje ruch przy wykorzystanie algorytmu minmax z g³êbokoœci¹ 5
 coordinates masterComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	return prepareAndPerformMinMax(currentBoard, whiteTurn, 4);
 }
 
+//generuje ruch przy pomocy statycznej ewaluacji z dodatkow¹ szans¹ na przegapienie niez³ych ruchów
 coordinates easyComputer::findBestMove(penteBoard * currentBoard, bool whiteTurn)
 {
 	//szanse przedstawione jako 1 na ile przypadkow przegapi dana kategorie ruchow

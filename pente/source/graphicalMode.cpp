@@ -11,8 +11,9 @@
 
 
 coordinates communication = { -1, -1 };
-float disBetweenSquares = 420.0f / 18.0f;
+const float disBetweenSquares = 420.0f / 18.0f;
 
+//funkcja wywo³ywana przy klikniêciu myszk¹
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
@@ -25,10 +26,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 
-graphicalInterface::graphicalInterface() :va(NULL) {
+graphicalInterface::graphicalInterface() :va(NULL), ib(NULL) {
 
 	if (!glfwInit()) {
-		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji" << std::endl;
+		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji1" << std::endl;
 		__debugbreak();
 		return;
 	}
@@ -39,7 +40,7 @@ graphicalInterface::graphicalInterface() :va(NULL) {
 	window = glfwCreateWindow(960, 540, "Pente", NULL, NULL);
 	if (!window)
 	{
-		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji" << std::endl;
+		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji2" << std::endl;
 		glfwTerminate();
 		__debugbreak();
 		return;
@@ -49,13 +50,14 @@ graphicalInterface::graphicalInterface() :va(NULL) {
 	glfwSwapInterval(1);
 
 	if (glewInit() != GLEW_OK) {
-		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji" << std::endl;
+		std::cout << "Nie mozna otworzyc okna. Krytyczny blad aplikacji3" << std::endl;
 		glfwTerminate();
 		__debugbreak();
 		return;
 	}
 }
 
+//blendowanie kana³u alfa
 void graphicalInterface::blendEnable() const
 {
 	GLCall(glEnable(GL_BLEND));
@@ -77,6 +79,7 @@ void graphicalInterface::prepareVertexBuffer() {
 	ib = new indexBuffer(squareIndices, 6);
 }
 
+//tworzy shader i ³aduje grafiki
 void graphicalInterface::prepareShaders()
 {
 	shader = new Shader("resources/shaders/basic.shader");
@@ -106,6 +109,7 @@ void graphicalInterface::setupCallbacks() const
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 }
 
+//wektory do przesuwania, rzutowania i skalowania obiektów
 void graphicalInterface::setupMatrices()
 {
 	translationA = new glm::vec3(270 / 5.2, 270 / 5.2, 0);

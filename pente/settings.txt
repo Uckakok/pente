@@ -1,7 +1,7 @@
 penteVersion: regularPente
-console: ASCII
-autosave: false
+console: UTF8
+autosave: true
 pro: false
-graphical: false
-undo: false
-AI: -1
+graphical: true
+undo: true
+AI: 4

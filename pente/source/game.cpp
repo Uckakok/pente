@@ -379,6 +379,11 @@ void gameLoop(penteBoard *currentGame, settings *currentSettings, SOCKET enemySo
 				else {
 					int recvReturn;
 					while ((recvReturn = recv(enemySocket, (char*)&nextMove, sizeof(nextMove), 0)) <= 0) {
+						if (recvReturn < 0) {
+							cout << "Blad polaczenia." << endl;
+							system("pause");
+							return;
+						}
 						if (currentSettings->graphical) {
 							window->windowUpdate();
 						}

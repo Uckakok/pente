@@ -106,6 +106,7 @@ penteBoard::penteBoard(string pathToLoad)
 			}
 		}
 		if (!okData) {
+			cout << "Plik jest uszkodzony." << endl;
 			penteVariant = -1;
 		}
 	}

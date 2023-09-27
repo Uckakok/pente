@@ -1370,6 +1370,6 @@
     <None Include="source\vendor\glm\gtx\wrap.inl">
       <Filter>Pliki nagłówkowe</Filter>
     </None>
-    <None Include="diagramKlas.cd" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

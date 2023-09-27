@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="graphicalInterface" Collapsed="true">
+    <Position X="15.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACQEAIAAAAIAoUiAQAAgiBACAAAAASAoAAAACHCAhAg=</HashCode>
+      <FileName>source\graphicalMode.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="indexBuffer" Collapsed="true">
+    <Position X="13.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAIAAAAAAAAAAAAAAABAAAAAAAAAAAAQFBAA=</HashCode>
+      <FileName>source\indexBuffer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="penteBoard" Collapsed="true">
+    <Position X="8.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAgAgAgAAIAAAAAAIDAAKVAAQQAAIEIAQABAgRA=</HashCode>
+      <FileName>source\penteBoard.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UTF8Pente" Collapsed="true">
+    <Position X="10" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteBoard.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ASCIIPente" Collapsed="true">
+    <Position X="7.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteBoard.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="computerPlayer" Collapsed="true">
+    <Position X="14.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIEAAABAAAAAACAAAAAAAEgAAAAAAAAAAAABIAAAgA=</HashCode>
+      <FileName>source\penteEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="advancedComputer" Collapsed="true">
+    <Position X="13" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="expertComputer" Collapsed="true">
+    <Position X="17" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="mediumComputer" Collapsed="true">
+    <Position X="11.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="masterComputer" Collapsed="true">
+    <Position X="15" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="easyComputer" Collapsed="true">
+    <Position X="18.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\penteEngine.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Renderer" Collapsed="true">
+    <Position X="18.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\Renderer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="settings" Collapsed="true">
+    <Position X="5.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAgAAgAAAACAACAGAAAIAAAQAAAAAAAA=</HashCode>
+      <FileName>source\settings.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Shader" Collapsed="true">
+    <Position X="12.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAACAABAIAAAAAAIAAAAAAAAAgAAEAABBAAUAAABAA=</HashCode>
+      <FileName>source\shader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Texture" Collapsed="true">
+    <Position X="18.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAACAAAAIAAgAABAAABAAAAQAAAQACAABIAAAAABAA=</HashCode>
+      <FileName>source\texture.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="vertexArray" Collapsed="true">
+    <Position X="18.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAIIAAAAAAAAAAAAAAAAAAIAAEAAAAAAAABAA=</HashCode>
+      <FileName>source\vertexArray.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="vertexBufferLayout" Collapsed="true">
+    <Position X="14" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAgAAABAAAAAAAAAAAAAAAAAQAIAAAAAAI=</HashCode>
+      <FileName>source\vertexBufferLayout.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="__unnamed_struct_0009_1" Collapsed="true">
+    <Position X="6.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAA=</HashCode>
+      <FileName>source\graphicalMode.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="shaderProgramSource" Collapsed="true">
+    <Position X="16.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAgAAA=</HashCode>
+      <FileName>source\shader.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="vertexBufferElement" Collapsed="true">
+    <Position X="15.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAABAAAAAEAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\vertexBufferLayout.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="pieceToDraw" Collapsed="true">
+    <Position X="6.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>source\graphicalMode.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

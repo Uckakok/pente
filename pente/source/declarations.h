@@ -17,6 +17,8 @@
 
 #define BOARDSIZE	19
 
+
+
 struct coordinates {
 	int x;
 	int y;
@@ -28,3 +30,20 @@ struct coordinates {
 		return (x == left.x && y == left.y);
 	}
 };
+
+#define WINVALUE	200000
+#define	ONEMOVEWIN 50000
+#define UNLOCKEDFOUR	25000
+#define	TAKENPAWNS	40000
+#define POSSIBLETAKING	20000
+#define LOCKEDFOUR	4000
+#define UNLOCKEDTHREE	3000
+
+#define ADJACENT8	800
+#define ADJACENT7	700
+#define ADJACENT6	600
+#define ADJACENT5	500
+#define ADJACENT4	400
+#define ADJACENT3	300
+#define ADJACENT2	200
+#define ADJACENT1	100
